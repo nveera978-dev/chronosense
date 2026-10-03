@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)" />
+  <circle cx="256" cy="256" r="180" stroke="#334155" stroke-width="12" fill="none" />
+  <!-- Clock ticks -->
+  <line x1="256" y1="96" x2="256" y2="120" stroke="#94a3b8" stroke-width="8" stroke-linecap="round"/>
+  <line x1="416" y1="256" x2="392" y2="256" stroke="#94a3b8" stroke-width="8" stroke-linecap="round"/>
+  <line x1="256" y1="416" x2="256" y2="392" stroke="#94a3b8" stroke-width="8" stroke-linecap="round"/>
+  <line x1="96" y1="256" x2="120" stroke="#94a3b8" stroke-width="8" stroke-linecap="round"/>
+  <!-- Progress arc -->
+  <path d="M 256 100 A 156 156 0 0 1 390 334" fill="none" stroke="url(#accentGrad)" stroke-width="20" stroke-linecap="round"/>
+  <!-- Center elements: Hourglass & Target -->
+  <circle cx="256" cy="256" r="16" fill="#10b981" />
+  <line x1="256" y1="256" x2="256" y2="150" stroke="#f8fafc" stroke-width="10" stroke-linecap="round"/>
+  <line x1="256" y1="256" x2="330" y2="290" stroke="#38bdf8" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="256" cy="256" r="6" fill="#0f172a" />
+</svg>
