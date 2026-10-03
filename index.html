@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>DayFlow | Habit & Time Flow</title>
+  <title>DayFlow | Daily Habit & Time Flow</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#050811">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -58,7 +58,10 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
   <style>
-    body {
+    /* CRITICAL: Disable accidental browser pull-to-refresh on mobile */
+    html, body {
+      overscroll-behavior-y: contain;
+      overscroll-behavior-x: none;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -67,7 +70,6 @@
     .pb-safe { padding-bottom: max(env(safe-area-inset-bottom, 1.25rem), 1.25rem); }
     .pt-safe { padding-top: max(env(safe-area-inset-top, 0.75rem), 0.75rem); }
 
-    /* Hide scrollbars smoothly */
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
@@ -80,7 +82,6 @@
       opacity: 0.88;
     }
 
-    /* 28-day grid dot */
     .grid-dot {
       width: 9px;
       height: 9px;
@@ -91,14 +92,12 @@
 </head>
 <body class="bg-surface-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-accent-emerald selection:text-white">
 
-  <!-- TOP BAR: LUXURY MINIMALIST HEADER -->
+  <!-- TOP BAR: MINIMAL LUXURY HEADER -->
   <header class="sticky top-0 z-40 bg-surface-950/95 backdrop-blur-2xl border-b border-surface-850/80 pt-safe px-4 py-3">
     <div class="max-w-md mx-auto space-y-3">
       
-      <!-- Row 1: Brand & Sound & Today Jump -->
+      <!-- Brand & Controls -->
       <div class="flex items-center justify-between">
-        
-        <!-- Logo & Title -->
         <div class="flex items-center space-x-2.5">
           <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-emerald-500 to-cyan-500 p-0.5 shadow-glow-emerald">
             <div class="w-full h-full bg-surface-950 rounded-[14px] flex items-center justify-center">
@@ -118,25 +117,22 @@
           </div>
         </div>
 
-        <!-- Controls: Sound Toggle (Fixed Bug) & Today Jump -->
+        <!-- Controls: Sound Toggle & Today Jump -->
         <div class="flex items-center space-x-2">
-          
-          <!-- Persistent Stable Sound Button -->
-          <button id="soundToggleBtn" type="button" class="btn-press flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl bg-surface-850 border border-surface-750 text-slate-300 font-bold text-xs" title="Toggle Sound Effects">
+          <button id="soundToggleBtn" type="button" class="btn-press flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl bg-surface-850 border border-surface-750 text-slate-300 font-bold text-xs" title="Toggle Sound">
             <span id="soundIconWrapper" class="text-emerald-400 flex items-center">
               <i data-lucide="volume-2" class="w-4 h-4"></i>
             </span>
             <span id="soundStatusText" class="text-[11px] font-black text-emerald-400">ON</span>
           </button>
 
-          <!-- Today Button -->
           <button id="todayQuickBtn" type="button" class="btn-press px-3 py-1.5 text-xs font-black text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl shadow-glow-emerald transition">
             Today
           </button>
         </div>
       </div>
 
-      <!-- Row 2: Week Range & Infinite Navigation (< Previous Week | Oct 04 - Oct 10 | Next Week >) -->
+      <!-- Week Range Navigation (< Previous Week | Oct 04 - Oct 10 | Next Week >) -->
       <div class="flex items-center justify-between bg-surface-900/90 border border-surface-800 rounded-2xl px-3 py-1.5 text-xs">
         <button id="prevWeekBtn" type="button" class="btn-press p-1 text-slate-400 hover:text-white rounded-lg transition" title="Previous Week">
           <i data-lucide="chevron-left" class="w-5 h-5 stroke-[2.5]"></i>
@@ -152,14 +148,14 @@
         </button>
       </div>
 
-      <!-- Row 3: Spacious 7-Day Capsule Strip -->
+      <!-- 7-Day Capsule Strip -->
       <div class="flex items-center justify-between gap-1 overflow-x-auto no-scrollbar py-0.5" id="weekCapsuleBar">
-        <!-- Rendered dynamically by app.js (Large, thumb-friendly capsules) -->
+        <!-- Rendered dynamically in app.js -->
       </div>
     </div>
   </header>
 
-  <!-- MAIN VIEWPORT (SPACIOUS & EXPENSIVE AESTHETICS) -->
+  <!-- MAIN SCROLLABLE VIEWPORT -->
   <main class="flex-1 overflow-y-auto px-4 py-3 max-w-md mx-auto w-full pb-32 space-y-4">
 
     <!-- SELECTED DAY & 4-PILL MODE BAR -->
@@ -204,42 +200,70 @@
       </p>
     </div>
 
-    <!-- ========================================== -->
-    <!-- VIEW 1: 📅 PLANNER TAB (Teams-Style Flow)   -->
-    <!-- ========================================== -->
-    <div id="viewPlanner" class="space-y-4">
+    <!-- ======================================================== -->
+    <!-- VIEW 1: 📅 TODAY (UNIFIED SCHEDULE + FOCUS QUEST)         -->
+    <!-- All daily actions happen right here. No confusion!       -->
+    <!-- ======================================================== -->
+    <div id="viewToday" class="space-y-4">
       
-      <!-- Weekly Blueprint Card (1-Tap Morning Setup) -->
+      <!-- HERO: 5-HOUR FOCUS QUEST RING WIDGET -->
+      <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-surface-900 to-surface-850 border border-emerald-500/30 p-4 shadow-xl">
+        <div class="flex items-center justify-between gap-4">
+          <div class="space-y-1.5">
+            <span class="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+              <i data-lucide="target" class="w-3.5 h-3.5"></i> 5-Hour Focus Quest
+            </span>
+            <div class="flex items-baseline gap-2">
+              <span id="trackerFocusedHoursNumber" class="text-3xl font-black text-emerald-400 tracking-tight">0.0</span>
+              <span class="text-sm font-bold text-slate-400" id="trackerGoalDenominatorText">/ 5.0h Goal</span>
+            </div>
+            <p class="text-xs text-slate-300 font-medium" id="trackerQuestRemainingText">Tap [✓ Done] on your schedule blocks to fill your quest!</p>
+          </div>
+
+          <!-- Circular Ring -->
+          <div class="relative w-16 h-16 shrink-0 flex items-center justify-center">
+            <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
+              <path class="text-surface-800" stroke-width="3.5" stroke="currentColor" fill="none"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              <path id="trackerRingArc" class="text-emerald-400 transition-all duration-700 ease-out" stroke-dasharray="0, 100" stroke-width="3.5" stroke-linecap="round" stroke="currentColor" fill="none"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            </svg>
+            <span class="absolute text-sm font-black text-white" id="trackerPercentageText">0%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick 1-Tap Blueprint Sync -->
       <div class="rounded-3xl bg-surface-900 border border-surface-800 p-4 space-y-3 shadow-sm">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2.5">
-            <div class="w-10 h-10 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
-              <i data-lucide="layers" class="w-5 h-5"></i>
+            <div class="w-9 h-9 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
+              <i data-lucide="layers" class="w-4 h-4"></i>
             </div>
             <div>
-              <h3 class="text-sm font-black text-white" id="blueprintTitle">Workday Blueprint (Teams Style)</h3>
-              <p class="text-xs text-slate-400" id="blueprintSubtitle">Office 2-6 PM • WFH 7-7:30 PM • 2h YouTube</p>
+              <h3 class="text-xs font-black text-white" id="blueprintTitle">Workday Blueprint</h3>
+              <p class="text-[11px] text-slate-400" id="blueprintSubtitle">Office 2-6 PM • WFH 7-7:30 PM • 2h YouTube</p>
             </div>
           </div>
+          <button type="button" id="applyTodayBlueprintBtn" class="btn-press py-2 px-3 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 text-indigo-300 font-black rounded-xl text-xs flex items-center gap-1.5 transition shadow-glow-indigo">
+            <i data-lucide="zap" class="w-3.5 h-3.5"></i> Fill Day
+          </button>
         </div>
 
-        <!-- Action Buttons: Large and Tactile -->
-        <div class="grid grid-cols-2 gap-2 pt-1">
-          <button type="button" id="applyTodayBlueprintBtn" class="btn-press py-2.5 px-3 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 text-indigo-300 font-black rounded-2xl text-xs flex items-center justify-center gap-1.5 transition shadow-glow-indigo">
-            <i data-lucide="zap" class="w-4 h-4"></i> Apply Today
-          </button>
-          <button type="button" id="applyWeekBlueprintBtn" class="btn-press py-2.5 px-3 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 font-black rounded-2xl text-xs flex items-center justify-center gap-1.5 transition">
-            <i data-lucide="copy" class="w-4 h-4"></i> Sync Mon–Fri
+        <div class="flex items-center justify-between pt-2 border-t border-surface-800/80 text-xs">
+          <span class="text-slate-400">Plan full week without overthinking:</span>
+          <button type="button" id="applyWeekBlueprintBtn" class="btn-press text-emerald-400 hover:text-emerald-300 font-black flex items-center gap-1 transition">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i> Fill Mon–Fri
           </button>
         </div>
       </div>
 
-      <!-- Quick 1-Tap Template Chips -->
-      <div class="space-y-2">
+      <!-- Quick 1-Tap Chips -->
+      <div class="space-y-1.5">
         <div class="flex items-center justify-between px-1">
-          <span class="text-xs font-black uppercase text-slate-400 tracking-wider">Quick Template Blocks</span>
+          <span class="text-xs font-black uppercase text-slate-400 tracking-wider">Quick Blocks</span>
           <button id="openPlanModalBtn" type="button" class="btn-press text-xs font-black text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
-            <i data-lucide="plus-circle" class="w-4 h-4"></i> Custom Block
+            <i data-lucide="plus-circle" class="w-4 h-4"></i> Custom
           </button>
         </div>
 
@@ -262,102 +286,38 @@
         </div>
       </div>
 
-      <!-- Planned Blocks List -->
+      <!-- Unified Schedule Flow (Checkmark directly verifies into audit!) -->
       <div class="space-y-2">
         <div class="flex items-center justify-between text-xs text-slate-400 font-bold px-1">
-          <span>Scheduled Timeline</span>
-          <span id="planTotalHoursBadge" class="text-indigo-400 font-black">0.0h planned</span>
+          <span>Today's Flow (Schedule & Audit)</span>
+          <span id="planTotalHoursBadge" class="text-emerald-400 font-black">0.0h logged</span>
         </div>
         <div id="plannerListContainer" class="space-y-3">
-          <!-- Rendered dynamically in app.js -->
+          <!-- Rendered dynamically in app.js with 1-tap [✓] completion -->
         </div>
       </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- VIEW 2: ⏱️ TRACKER TAB (Evening Audit)      -->
-    <!-- ========================================== -->
-    <div id="viewTracker" class="hidden space-y-4">
-      
-      <!-- HERO: 5-HOUR FOCUS QUEST WIDGET (Big Bold Numbers) -->
-      <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-surface-900 to-surface-850 border border-emerald-500/30 p-4 shadow-xl">
-        <div class="flex items-center justify-between gap-4">
-          <div class="space-y-1.5">
-            <span class="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-              <i data-lucide="target" class="w-3.5 h-3.5"></i> Daily 5-Hour Focus Quest
-            </span>
-            <div class="flex items-baseline gap-2">
-              <span id="trackerFocusedHoursNumber" class="text-3xl font-black text-emerald-400 tracking-tight">0.0</span>
-              <span class="text-sm font-bold text-slate-400" id="trackerGoalDenominatorText">/ 5.0h Goal</span>
-            </div>
-            <p class="text-xs text-slate-300 font-medium" id="trackerQuestRemainingText">Hit 5 focused hours to unlock today's Trophy!</p>
-          </div>
-
-          <!-- Circular Ring -->
-          <div class="relative w-16 h-16 shrink-0 flex items-center justify-center">
-            <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
-              <path class="text-surface-800" stroke-width="3.5" stroke="currentColor" fill="none"
-                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-              <path id="trackerRingArc" class="text-emerald-400 transition-all duration-700 ease-out" stroke-dasharray="0, 100" stroke-width="3.5" stroke-linecap="round" stroke="currentColor" fill="none"
-                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-            </svg>
-            <span class="absolute text-sm font-black text-white" id="trackerPercentageText">0%</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- PENDING PLANS REVIEW (The Evening 2-Minute Audit!) -->
-      <div id="pendingReviewBanner" class="hidden rounded-3xl bg-amber-500/10 border border-amber-500/30 p-4 space-y-2.5">
-        <div class="flex items-center justify-between">
-          <span class="text-sm font-bold text-amber-300 flex items-center gap-2">
-            <i data-lucide="check-check" class="w-5 h-5 text-amber-400"></i>
-            <span id="pendingReviewCountText">3 Planned Blocks to Verify</span>
-          </span>
-          <button id="confirmAllPendingBtn" type="button" class="btn-press px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-surface-950 font-black rounded-xl text-xs transition">
-            Confirm All Done
-          </button>
-        </div>
-        <p class="text-xs text-slate-300 leading-relaxed">
-          Review what actually happened today. Completed blocks are permanently added to your verified audit ledger.
-        </p>
-        <div id="pendingReviewCardsList" class="space-y-2 pt-1">
-          <!-- Populated in JS -->
-        </div>
-      </div>
-
-      <!-- VERIFIED AUDIT TIMELINE -->
-      <div class="space-y-2">
-        <div class="flex items-center justify-between text-xs text-slate-400 font-bold px-1">
-          <span>Verified Ledger</span>
-          <span id="statVerifiedTotalHours" class="text-emerald-400 font-black">0.0h logged</span>
-        </div>
-        <div id="verifiedTimelineContainer" class="space-y-3">
-          <!-- Rendered in app.js -->
-        </div>
-      </div>
-    </div>
-
-    <!-- ========================================== -->
-    <!-- VIEW 3: 🟩 BEAUTIFUL GRIDS (Habit Streaks)   -->
-    <!-- ========================================== -->
-    <div id="viewGrids" class="hidden space-y-4">
+    <!-- ======================================================== -->
+    <!-- VIEW 2: 🟩 HABITS (28-DAY MOMENTUM GRIDS)                -->
+    <!-- ======================================================== -->
+    <div id="viewHabits" class="hidden space-y-4">
       <div class="flex items-center justify-between px-1">
         <div>
-          <h2 class="text-base font-black text-white">Habit Grids</h2>
+          <h2 class="text-base font-black text-white">Habit Streaks</h2>
           <p class="text-xs text-slate-400">28-day visual momentum matrices.</p>
         </div>
         <span class="text-xs font-black text-amber-400 bg-amber-500/15 border border-amber-500/30 px-2.5 py-1 rounded-xl" id="habitsCompletedCounter">0 / 5 Today</span>
       </div>
 
-      <!-- Habit Cards with 28-day dot grids -->
       <div id="habitGridCardsContainer" class="space-y-3">
         <!-- Rendered in app.js -->
       </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- VIEW 4: 📊 STATS & TIME EXPENSE AUDIT       -->
-    <!-- ========================================== -->
+    <!-- ======================================================== -->
+    <!-- VIEW 3: 📊 STATS (TIME AUDIT & ANALYTICS)                -->
+    <!-- ======================================================== -->
     <div id="viewStats" class="hidden space-y-4">
       <!-- Donut Chart -->
       <div class="bg-surface-900 rounded-3xl p-4 border border-surface-800 shadow-sm">
@@ -439,83 +399,114 @@
       </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- VIEW 5: ⚙️ SETTINGS & BACKUP               -->
-    <!-- ========================================== -->
+    <!-- ======================================================== -->
+    <!-- VIEW 4: ⚙️ SETTINGS (CLEAN APPLE/LINEAR GROUPED CARDS)    -->
+    <!-- ======================================================== -->
     <div id="viewSettings" class="hidden space-y-4 text-xs">
+      
+      <!-- Group 1: Preferences -->
       <div class="bg-surface-900 rounded-3xl p-4 border border-surface-800 shadow-sm space-y-3">
-        <h3 class="text-xs font-black uppercase tracking-wider text-white flex items-center gap-2">
-          <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> Backup & Data Ownership
-        </h3>
-        <button id="exportCsvBtn" type="button" class="btn-press w-full py-3 px-4 bg-surface-850 hover:bg-surface-800 border border-surface-800 text-slate-200 rounded-2xl font-bold flex items-center justify-between transition">
+        <h3 class="text-xs font-black uppercase tracking-wider text-slate-400">Preferences</h3>
+        
+        <div class="flex items-center justify-between py-1">
+          <div class="flex items-center gap-2.5">
+            <i data-lucide="volume-2" class="w-4 h-4 text-amber-400"></i>
+            <div>
+              <p class="text-xs font-bold text-white">Audio & Haptic Feedback</p>
+              <p class="text-[11px] text-slate-400">Chimes on checkmarks and buttons</p>
+            </div>
+          </div>
+          <button id="settingsSoundBtn" type="button" class="btn-press px-3 py-1 rounded-xl bg-surface-850 border border-emerald-500/30 text-emerald-400 font-black text-xs">
+            ON
+          </button>
+        </div>
+
+        <div class="flex items-center justify-between py-1 border-t border-surface-800">
+          <div class="flex items-center gap-2.5">
+            <i data-lucide="target" class="w-4 h-4 text-emerald-400"></i>
+            <div>
+              <p class="text-xs font-bold text-white">Daily Focus Goal</p>
+              <p class="text-[11px] text-slate-400">Recommended: 5.0 hours</p>
+            </div>
+          </div>
+          <span class="text-xs font-black text-emerald-400">5.0 hrs / day</span>
+        </div>
+      </div>
+
+      <!-- Group 2: Data Ownership & Backup -->
+      <div class="bg-surface-900 rounded-3xl p-4 border border-surface-800 shadow-sm space-y-3">
+        <h3 class="text-xs font-black uppercase tracking-wider text-slate-400">Data & Backup</h3>
+        
+        <button id="exportCsvBtn" type="button" class="btn-press w-full py-2.5 px-3 bg-surface-850 hover:bg-surface-800 border border-surface-800 text-slate-200 rounded-2xl font-bold flex items-center justify-between transition">
           <span class="flex items-center gap-2.5">
-            <i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-400"></i> Export to Excel (CSV)
+            <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-400"></i> Export to Excel (CSV)
           </span>
           <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
         </button>
-        <button id="backupJsonBtn" type="button" class="btn-press w-full py-3 px-4 bg-surface-850 hover:bg-surface-800 border border-surface-800 text-slate-200 rounded-2xl font-bold flex items-center justify-between transition">
+
+        <button id="backupJsonBtn" type="button" class="btn-press w-full py-2.5 px-3 bg-surface-850 hover:bg-surface-800 border border-surface-800 text-slate-200 rounded-2xl font-bold flex items-center justify-between transition">
           <span class="flex items-center gap-2.5">
-            <i data-lucide="database" class="w-5 h-5 text-cyan-400"></i> Full Backup (JSON)
+            <i data-lucide="database" class="w-4 h-4 text-cyan-400"></i> Backup to File (JSON)
           </span>
           <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
         </button>
-        <label class="btn-press w-full py-3 px-4 bg-surface-850 hover:bg-surface-800 border border-surface-800 text-slate-200 rounded-2xl font-bold flex items-center justify-between transition cursor-pointer">
+
+        <label class="btn-press w-full py-2.5 px-3 bg-surface-850 hover:bg-surface-800 border border-surface-800 text-slate-200 rounded-2xl font-bold flex items-center justify-between transition cursor-pointer">
           <span class="flex items-center gap-2.5">
-            <i data-lucide="upload" class="w-5 h-5 text-purple-400"></i> Restore Backup
+            <i data-lucide="upload" class="w-4 h-4 text-purple-400"></i> Restore from Backup
           </span>
           <input type="file" id="importJsonInput" accept=".json" class="hidden">
           <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
         </label>
       </div>
 
+      <!-- Group 3: Danger Zone & Info -->
       <div class="bg-surface-900 rounded-3xl p-4 border border-surface-800 shadow-sm space-y-2.5">
         <button id="loadSampleDataBtn" type="button" class="btn-press w-full py-2.5 px-4 bg-surface-850 hover:bg-surface-800 border border-surface-800 text-slate-300 rounded-2xl font-semibold flex items-center justify-center gap-2 transition">
           <i data-lucide="refresh-cw" class="w-4 h-4 text-amber-400"></i> Reset Demo Day
         </button>
         <button id="clearTodayBtn" type="button" class="btn-press w-full py-2.5 px-4 bg-surface-850 hover:bg-rose-500/10 border border-surface-800 text-rose-400 rounded-2xl font-semibold flex items-center justify-center gap-2 transition">
-          <i data-lucide="trash-2" class="w-4 h-4 text-rose-400"></i> Clear Today's Data
+          <i data-lucide="trash-2" class="w-4 h-4 text-rose-400"></i> Clear Today's Schedule
         </button>
+        <div class="text-center pt-2 text-slate-500 text-[11px]">
+          DayFlow v4.2 • 100% Private & Offline-First
+        </div>
       </div>
     </div>
 
   </main>
 
-  <!-- FLOATING PLUS BUTTON (Large, Thumb-Friendly, Bottom Right) -->
+  <!-- FLOATING PLUS BUTTON -->
   <button id="floatingPlusBtn" type="button" class="btn-press fixed right-5 bottom-24 z-30 w-14 h-14 bg-gradient-to-r from-emerald-500 to-cyan-500 text-surface-950 font-black rounded-3xl shadow-xl shadow-emerald-500/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-all">
     <i data-lucide="plus" class="w-7 h-7 stroke-[3]"></i>
   </button>
 
-  <!-- BOTTOM FIXED ONE-HANDED NAVIGATION TABS -->
+  <!-- BOTTOM FIXED 4 TABS (ONE-HANDED THUMB NAVIGATION) -->
   <nav class="fixed bottom-0 left-0 right-0 z-40 bg-surface-950/95 backdrop-blur-2xl border-t border-surface-850/80 pb-safe shadow-2xl">
-    <div class="max-w-md mx-auto grid grid-cols-5 px-2 py-2 text-center">
-      <button id="navTabPlanner" type="button" class="btn-press flex flex-col items-center py-2 text-emerald-400 font-bold transition">
-        <i data-lucide="calendar-plus" class="w-5 h-5 mb-1"></i>
-        <span class="text-[11px] font-black">Planner</span>
+    <div class="max-w-md mx-auto grid grid-cols-4 px-2 py-2 text-center">
+      <button id="navTabToday" type="button" class="btn-press flex flex-col items-center py-2 text-emerald-400 font-bold transition">
+        <i data-lucide="calendar" class="w-5 h-5 mb-1"></i>
+        <span class="text-xs font-black">Today</span>
       </button>
 
-      <button id="navTabTracker" type="button" class="btn-press flex flex-col items-center py-2 text-slate-400 hover:text-white transition">
-        <i data-lucide="check-circle" class="w-5 h-5 mb-1"></i>
-        <span class="text-[11px] font-black">Tracker</span>
-      </button>
-
-      <button id="navTabGrids" type="button" class="btn-press flex flex-col items-center py-2 text-slate-400 hover:text-white transition">
+      <button id="navTabHabits" type="button" class="btn-press flex flex-col items-center py-2 text-slate-400 hover:text-white transition">
         <i data-lucide="grid" class="w-5 h-5 mb-1"></i>
-        <span class="text-[11px] font-black">Grids</span>
+        <span class="text-xs font-black">Habits</span>
       </button>
 
       <button id="navTabStats" type="button" class="btn-press flex flex-col items-center py-2 text-slate-400 hover:text-white transition">
         <i data-lucide="bar-chart-2" class="w-5 h-5 mb-1"></i>
-        <span class="text-[11px] font-black">Stats</span>
+        <span class="text-xs font-black">Stats</span>
       </button>
 
       <button id="navTabSettings" type="button" class="btn-press flex flex-col items-center py-2 text-slate-400 hover:text-white transition">
         <i data-lucide="settings" class="w-5 h-5 mb-1"></i>
-        <span class="text-[11px] font-black">Settings</span>
+        <span class="text-xs font-black">Settings</span>
       </button>
     </div>
   </nav>
 
-  <!-- ONE-HANDED BOTTOM SHEET MODAL (Thumb Reachable) -->
+  <!-- ONE-HANDED BOTTOM SHEET MODAL -->
   <div id="entryModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-end justify-center p-0 sm:p-4">
     <div class="bg-surface-900 w-full max-w-md rounded-t-[32px] sm:rounded-3xl border border-surface-800 shadow-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-200">
       
@@ -530,19 +521,9 @@
         </button>
       </div>
 
-      <!-- Modal Body (Spacious, No Clutter, Big Touch Targets) -->
+      <!-- Modal Body -->
       <div class="p-6 overflow-y-auto space-y-4 text-xs">
         
-        <!-- Mode Switch: Plan vs Direct -->
-        <div class="grid grid-cols-2 gap-2 bg-surface-950 p-1.5 rounded-2xl border border-surface-800">
-          <button type="button" id="modalModePlanBtn" class="btn-press py-2 text-xs font-black rounded-xl bg-surface-800 text-emerald-400 shadow transition">
-            📅 Add to Plan
-          </button>
-          <button type="button" id="modalModeDirectBtn" class="btn-press py-2 text-xs font-black rounded-xl text-slate-400 hover:text-white transition">
-            ⏱️ Log Directly
-          </button>
-        </div>
-
         <!-- Start Time -->
         <div class="flex items-center justify-between bg-surface-850 p-3.5 rounded-2xl border border-surface-800">
           <span class="text-slate-200 font-bold text-xs flex items-center gap-2">
@@ -553,7 +534,7 @@
           </select>
         </div>
 
-        <!-- Duration Selector: Large Touch Targets -->
+        <!-- Duration Selector -->
         <div class="bg-surface-850 p-3.5 rounded-2xl border border-surface-800 space-y-2.5">
           <span class="text-xs font-black text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
             <i data-lucide="timer" class="w-3.5 h-3.5 text-cyan-400"></i> Duration
@@ -584,7 +565,7 @@
           </div>
         </div>
 
-        <!-- 1-Tap Activity Presets -->
+        <!-- Activity Presets -->
         <div class="space-y-2">
           <span class="text-xs font-black text-slate-400 uppercase tracking-wider">Select Activity</span>
           <div class="grid grid-cols-2 gap-2.5" id="modalPresetGrid">
@@ -593,7 +574,7 @@
               <span class="text-xl">👥</span>
               <div>
                 <p class="font-bold text-indigo-300 text-xs">Teams Meeting</p>
-                <p class="text-[11px] text-indigo-400/80">Sync / Client Call</p>
+                <p class="text-[11px] text-indigo-400/80">Sync / Standup</p>
               </div>
             </button>
 
@@ -680,7 +661,7 @@
           Delete
         </button>
         <button id="modalSaveBtn" type="button" class="btn-press flex-1 py-3 px-4 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-surface-950 rounded-2xl text-xs font-black transition shadow-glow-emerald">
-          Save Schedule Block
+          Save Block
         </button>
       </div>
 
