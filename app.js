@@ -1,28 +1,27 @@
 /**
  * DayFlow | Daily Habit & Time Flow Engine v4.3
- * Unified "Today" Screen • Apple-grade Simplicity • Rich SFX • No SOP Needed
+ * Meeting / Zoom Calendar Timeline • Centered Pop-up Modal • Game-like Time Extender
  */
 
-// --- STORAGE KEYS & COMPATIBILITY ---
+// --- STORAGE KEYS & CONSTANTS ---
 const STORAGE_KEY = 'dayflow_v1';
 const SETTINGS_KEY = 'dayflow_settings_v1';
 
 const CATEGORY_META = {
-  meeting: { label: 'Teams Meeting', color: '#6366f1', bg: 'rgba(99, 102, 241, 0.15)', border: 'rgba(99, 102, 241, 0.3)', icon: 'users' },
-  investment: { label: 'Growth (Q2)', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)', border: 'rgba(16, 185, 129, 0.3)', icon: 'trending-up' },
-  maintenance: { label: 'Office Work', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.15)', border: 'rgba(59, 130, 246, 0.3)', icon: 'briefcase' },
-  rest: { label: 'Mindful Rest', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.15)', border: 'rgba(139, 92, 246, 0.3)', icon: 'heart' },
-  leak: { label: 'Time Leak (Q4)', color: '#f43f5e', bg: 'rgba(244, 63, 94, 0.15)', border: 'rgba(244, 63, 94, 0.3)', icon: 'alert-triangle' },
-  routine: { label: 'Routine / Transit', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.15)', border: 'rgba(245, 158, 11, 0.3)', icon: 'coffee' },
-  sleep: { label: 'Sleep & Recharge', color: '#6366f1', bg: 'rgba(99, 102, 241, 0.15)', border: 'rgba(99, 102, 241, 0.3)', icon: 'moon' }
+  meeting: { label: 'Teams Meeting', color: '#818cf8', bg: 'rgba(99, 102, 241, 0.15)', border: 'rgba(99, 102, 241, 0.4)', borderLeft: '#818cf8', icon: 'users', defaultDur: 45 },
+  office: { label: 'Office', color: '#60a5fa', bg: 'rgba(59, 130, 246, 0.15)', border: 'rgba(59, 130, 246, 0.4)', borderLeft: '#60a5fa', icon: 'briefcase', defaultDur: 240 },
+  business: { label: 'Business', color: '#34d399', bg: 'rgba(16, 185, 129, 0.15)', border: 'rgba(16, 185, 129, 0.4)', borderLeft: '#34d399', icon: 'trending-up', defaultDur: 120 },
+  sleep: { label: 'Sleep', color: '#c084fc', bg: 'rgba(168, 85, 247, 0.15)', border: 'rgba(168, 85, 247, 0.4)', borderLeft: '#c084fc', icon: 'moon', defaultDur: 480 },
+  workout: { label: 'Workout', color: '#fbbf24', bg: 'rgba(245, 158, 11, 0.15)', border: 'rgba(245, 158, 11, 0.4)', borderLeft: '#fbbf24', icon: 'activity', defaultDur: 60 },
+  personal: { label: 'Personal', color: '#22d3ee', bg: 'rgba(6, 182, 212, 0.15)', border: 'rgba(6, 182, 212, 0.4)', borderLeft: '#22d3ee', icon: 'heart', defaultDur: 60 }
 };
 
 const DEFAULT_HABITS = [
-  { id: 'h1', title: 'Zero movies during office work', category: 'focus', icon: '🛡️', color: '#10b981' },
-  { id: 'h2', title: 'YouTube Finance automation sprint', category: 'growth', icon: '📈', color: '#06b6d4' },
+  { id: 'h1', title: 'Zero distractions during office focus', category: 'focus', icon: '🛡️', color: '#10b981' },
+  { id: 'h2', title: 'Business growth sprint', category: 'growth', icon: '📈', color: '#06b6d4' },
   { id: 'h3', title: 'Real conversation with mother / friends', category: 'social', icon: '🗣️', color: '#8b5cf6' },
-  { id: 'h4', title: 'Physical walk & tea refresh', category: 'health', icon: '☕', color: '#f59e0b' },
-  { id: 'h5', title: 'Check prices & dates with eyes, not AI', category: 'discipline', icon: '👁️', color: '#ec4899' }
+  { id: 'h4', title: 'Physical workout & tea refresh', category: 'health', icon: '☕', color: '#f59e0b' },
+  { id: 'h5', title: 'Check prices & data directly with eyes', category: 'discipline', icon: '👁️', color: '#ec4899' }
 ];
 
 const LEVEL_TIERS = [
@@ -33,30 +32,82 @@ const LEVEL_TIERS = [
   { level: 5, title: 'Titan Grandmaster', minXp: 2000 }
 ];
 
-// Standard Blueprints (Teams Style)
-const WORKDAY_BLUEPRINT = [
-  { startHour: 7, durationMins: 120, title: 'YouTube Finance Automation & AI Engine', category: 'investment', eisenhower: 'q2', isMultitask: false },
-  { startHour: 10, durationMins: 45, title: 'Teams Sync / Client Standup', category: 'meeting', eisenhower: 'q1', isMultitask: false },
-  { startHour: 14, durationMins: 240, title: 'Office Work (Core Execution & Duties)', category: 'maintenance', eisenhower: 'q1', isMultitask: false },
-  { startHour: 19, durationMins: 30, title: 'Work From Home (Evening Shift)', category: 'maintenance', eisenhower: 'q1', isMultitask: false },
-  { startHour: 23, durationMins: 480, title: 'Night Sleep & Full Recovery', category: 'sleep', eisenhower: 'q2', isMultitask: false }
+// Default Clean Starter Schedule (No hardcoded timing in names)
+const DEFAULT_PLANS = [
+  {
+    id: 'p_business',
+    title: 'Business',
+    category: 'business',
+    startMins: 420,  // 07:00 AM
+    endMins: 540,    // 09:00 AM
+    durationMins: 120,
+    repeat: 'daily',
+    repeatDays: [0, 1, 2, 3, 4, 5, 6],
+    date: getTodayDateStr(),
+    isMultitask: false,
+    completedDates: {}
+  },
+  {
+    id: 'p_meeting',
+    title: 'Teams Meeting',
+    category: 'meeting',
+    startMins: 600,  // 10:00 AM
+    endMins: 645,    // 10:45 AM
+    durationMins: 45,
+    repeat: 'weekdays',
+    repeatDays: [1, 2, 3, 4, 5],
+    date: getTodayDateStr(),
+    isMultitask: false,
+    completedDates: {}
+  },
+  {
+    id: 'p_office',
+    title: 'Office',
+    category: 'office',
+    startMins: 660,  // 11:00 AM
+    endMins: 900,    // 03:00 PM
+    durationMins: 240,
+    repeat: 'weekdays',
+    repeatDays: [1, 2, 3, 4, 5],
+    date: getTodayDateStr(),
+    isMultitask: false,
+    completedDates: {}
+  },
+  {
+    id: 'p_workout',
+    title: 'Workout',
+    category: 'workout',
+    startMins: 1080, // 06:00 PM
+    endMins: 1140,   // 07:00 PM
+    durationMins: 60,
+    repeat: 'custom',
+    repeatDays: [1, 3, 5], // Mon, Wed, Fri
+    date: getTodayDateStr(),
+    isMultitask: false,
+    completedDates: {}
+  },
+  {
+    id: 'p_sleep',
+    title: 'Sleep',
+    category: 'sleep',
+    startMins: 1380, // 11:00 PM
+    endMins: 420,    // 07:00 AM
+    durationMins: 480,
+    repeat: 'daily',
+    repeatDays: [0, 1, 2, 3, 4, 5, 6],
+    date: getTodayDateStr(),
+    isMultitask: false,
+    completedDates: {}
+  }
 ];
 
-const WEEKEND_BLUEPRINT = [
-  { startHour: 8, durationMins: 60, title: 'Morning Walk & Healthy Breakfast', category: 'rest', eisenhower: 'q2', isMultitask: false },
-  { startHour: 10, durationMins: 180, title: 'Weekend Deep Project Sprint', category: 'investment', eisenhower: 'q2', isMultitask: false },
-  { startHour: 16, durationMins: 120, title: 'Personal Time & Outing / Chill', category: 'rest', eisenhower: 'q2', isMultitask: false },
-  { startHour: 19, durationMins: 60, title: 'Evening Tea & Family Talk', category: 'rest', eisenhower: 'q2', isMultitask: false },
-  { startHour: 23, durationMins: 480, title: 'Night Sleep & Recovery', category: 'sleep', eisenhower: 'q2', isMultitask: false }
-];
-
-// Global State
+// --- GLOBAL STATE ---
 let currentDateStr = getTodayDateStr();
 let appData = loadAppData();
 let appSettings = loadSettings();
-let selectedDurationMins = 240;
 let currentEditingPlanId = null;
-let currentEditingHour = null;
+let modalActiveCategory = 'office';
+let modalSelectedDays = [1, 3, 5];
 let donutChartInstance = null;
 let audioCtx = null;
 
@@ -68,21 +119,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }).catch(e => console.log('SW Note:', e));
   }
 
-  // Populate sample day if brand new
-  if (!appData[currentDateStr] || (!appData[currentDateStr].plans && !appData[currentDateStr].entries)) {
-    injectSampleDayData(currentDateStr);
-  }
-
+  ensureInitialPlans();
+  populateModalTimeDropdowns();
   setupEventListeners();
-  populateStartHourDropdown();
   refreshAllViews();
+
   if (window.lucide) lucide.createIcons();
 });
 
-// --- LUXURY SFX AUDIO SYNTHESIZER ---
+// --- AUDIO SFX SYNTHESIZER ---
 function playSfx(type) {
   if ('vibrate' in navigator) {
-    try { navigator.vibrate(type === 'quest' ? [15, 40, 15] : 8); } catch (e) {}
+    try { navigator.vibrate(type === 'quest' ? [20, 50, 20] : 10); } catch (e) {}
   }
 
   if (!appSettings.player?.soundEnabled) return;
@@ -116,8 +164,8 @@ function playSfx(type) {
       gain.connect(audioCtx.destination);
       osc.type = 'triangle';
       osc.frequency.setValueAtTime(950, now);
-      osc.frequency.exponentialRampToValueAtTime(400, now + 0.035);
-      gain.gain.setValueAtTime(0.08, now);
+      osc.frequency.exponentialRampToValueAtTime(420, now + 0.035);
+      gain.gain.setValueAtTime(0.09, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
       osc.start(now);
       osc.stop(now + 0.04);
@@ -147,30 +195,18 @@ function playSfx(type) {
         o.start(now + idx * 0.08);
         o.stop(now + idx * 0.08 + 0.36);
       });
-    } else if (type === 'swoosh') {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(320, now);
-      osc.frequency.exponentialRampToValueAtTime(840, now + 0.16);
-      gain.gain.setValueAtTime(0.16, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
-      osc.start(now);
-      osc.stop(now + 0.23);
     }
   } catch (e) {}
 }
 
 function fireConfetti() {
   if (typeof window.confetti === 'function') {
-    window.confetti({ particleCount: 75, spread: 65, origin: { y: 0.65 }, colors: ['#10b981', '#06b6d4', '#6366f1', '#fbbf24'] });
+    window.confetti({ particleCount: 70, spread: 60, origin: { y: 0.65 }, colors: ['#10b981', '#06b6d4', '#6366f1', '#fbbf24'] });
   }
 }
 
 // --- GAMIFICATION / XP ---
-function addXP(amount, reason = '') {
+function addXP(amount) {
   if (!appSettings.player) appSettings.player = { xp: 850, soundEnabled: true };
   const oldLevel = getPlayerLevel(appSettings.player.xp).level;
   appSettings.player.xp += amount;
@@ -233,7 +269,7 @@ function updatePlayerHeader() {
   }
 }
 
-// --- DATES & FORMATTING ---
+// --- DATE HELPERS ---
 function getTodayDateStr() {
   const d = new Date();
   return formatDateStr(d);
@@ -251,30 +287,21 @@ function parseDateStr(str) {
   return new Date(y, m - 1, d);
 }
 
-function formatHour12(h) {
+function minsToTimeStr(totalMins) {
+  const mins = ((totalMins % 1440) + 1440) % 1440;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
   const h12 = h % 12 === 0 ? 12 : h % 12;
   const ampm = h < 12 ? 'AM' : 'PM';
-  return `${String(h12).padStart(2, '0')}:00 ${ampm}`;
+  return `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${ampm}`;
 }
 
-function formatCustomSpan(startHour, durationMins) {
-  const startHour12 = startHour % 12 === 0 ? 12 : startHour % 12;
-  const startAmPm = startHour < 12 ? 'AM' : 'PM';
-
-  const endTotalMins = startHour * 60 + durationMins;
-  const endH = Math.floor(endTotalMins / 60) % 24;
-  const endM = endTotalMins % 60;
-  const endHour12 = endH % 12 === 0 ? 12 : endH % 12;
-  const endAmPm = endH < 12 ? 'AM' : 'PM';
-
-  const startFormatted = `${String(startHour12).padStart(2, '0')}:00 ${startAmPm}`;
-  const endFormatted = `${String(endHour12).padStart(2, '0')}:${String(endM).padStart(2, '0')} ${endAmPm}`;
-
-  const hoursLabel = durationMins >= 60 
-    ? (durationMins % 60 === 0 ? `${durationMins / 60}h` : `${(durationMins / 60).toFixed(1)}h`) 
-    : `${durationMins}m`;
-
-  return `${startFormatted} - ${endFormatted} (${hoursLabel})`;
+function formatDurationMins(dur) {
+  if (dur < 60) return `${dur}m`;
+  const h = Math.floor(dur / 60);
+  const m = dur % 60;
+  if (m === 0) return `${h}h 00m`;
+  return `${h}h ${m}m`;
 }
 
 function getWeekRangeText(dateStr) {
@@ -299,10 +326,12 @@ function getWeekRangeText(dateStr) {
 // --- DATA STORAGE & MIGRATION ---
 function loadAppData() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('chronosense_v3') || localStorage.getItem('chronosense_data_v2');
-    return raw ? JSON.parse(raw) : {};
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('chronosense_v3');
+    const data = raw ? JSON.parse(raw) : {};
+    if (!data.plans) data.plans = [];
+    return data;
   } catch (e) {
-    return {};
+    return { plans: [] };
   }
 }
 
@@ -314,7 +343,7 @@ function saveAppData() {
 
 function loadSettings() {
   try {
-    const raw = localStorage.getItem(SETTINGS_KEY) || localStorage.getItem('chronosense_settings_v3');
+    const raw = localStorage.getItem(SETTINGS_KEY);
     return raw ? JSON.parse(raw) : {
       player: { xp: 850, soundEnabled: true },
       habits: DEFAULT_HABITS,
@@ -331,56 +360,221 @@ function saveSettings() {
   } catch (e) {}
 }
 
-function ensureDayRecord(dateStr) {
-  if (!appData[dateStr]) {
-    const dateObj = parseDateStr(dateStr);
-    const dayOfWeek = dateObj.getDay();
-    const defaultType = (dayOfWeek === 0 || dayOfWeek === 6) ? 'weekend' : 'workday';
-    appData[dateStr] = {
-      dayType: defaultType,
-      plans: [],
-      entries: {},
-      habits: (appSettings.habits || DEFAULT_HABITS).map(h => ({ id: h.id, completed: false }))
-    };
+function ensureInitialPlans() {
+  if (!appData.plans || appData.plans.length === 0) {
+    appData.plans = JSON.parse(JSON.stringify(DEFAULT_PLANS));
+    saveAppData();
+  } else {
+    // Clean out old wrong timing templates if they were stored previously
+    let hasDirty = false;
+    appData.plans.forEach(p => {
+      if (p.title && (p.title.includes('YouTube') || p.title.includes('2:00 to 6:00') || p.title.includes('Work From Home'))) {
+        if (p.title.includes('YouTube')) { p.title = 'Business'; p.category = 'business'; }
+        if (p.title.includes('Office Work')) { p.title = 'Office'; p.category = 'office'; }
+        hasDirty = true;
+      }
+    });
+    if (hasDirty) saveAppData();
   }
-  if (!appData[dateStr].dayType) {
-    const dayOfWeek = parseDateStr(dateStr).getDay();
-    appData[dateStr].dayType = (dayOfWeek === 0 || dayOfWeek === 6) ? 'weekend' : 'workday';
-  }
-  if (!appData[dateStr].plans) appData[dateStr].plans = [];
-  if (!appData[dateStr].entries) appData[dateStr].entries = {};
-  if (!appData[dateStr].habits) appData[dateStr].habits = (appSettings.habits || DEFAULT_HABITS).map(h => ({ id: h.id, completed: false }));
-  return appData[dateStr];
 }
 
-// --- SAMPLE DATA INJECTION ---
-function injectSampleDayData(dateStr) {
-  const day = ensureDayRecord(dateStr);
-  day.dayType = 'workday';
-  day.plans = [
-    { id: 'p1', startHour: 7, durationMins: 120, title: 'YouTube Finance Automation & AI Engine', category: 'investment', eisenhower: 'q2', isMultitask: false, confirmed: true },
-    { id: 'p2', startHour: 10, durationMins: 45, title: 'Teams Sync / Client Standup', category: 'meeting', eisenhower: 'q1', isMultitask: false, confirmed: true },
-    { id: 'p3', startHour: 14, durationMins: 240, title: 'Office Work (Core Execution & Client Tasks)', category: 'maintenance', eisenhower: 'q1', isMultitask: false, confirmed: true },
-    { id: 'p4', startHour: 19, durationMins: 30, title: 'Work From Home (Evening Shift)', category: 'maintenance', eisenhower: 'q1', isMultitask: false, confirmed: false },
-    { id: 'p5', startHour: 23, durationMins: 480, title: 'Night Sleep & Full Recovery', category: 'sleep', eisenhower: 'q2', isMultitask: false, confirmed: false }
-  ];
+// --- MODAL TIME DROPDOWNS (15-Minute Increments) ---
+function populateModalTimeDropdowns() {
+  const startSelect = document.getElementById('modalStartHourSelect');
+  const endSelect = document.getElementById('modalEndHourSelect');
+  if (!startSelect || !endSelect) return;
 
-  day.entries = {
-    7: { title: 'YouTube Finance Automation & AI Engine', category: 'investment', eisenhower: 'q2', duration: 60, isMultitask: false },
-    8: { title: 'YouTube Finance Automation & AI Engine', category: 'investment', eisenhower: 'q2', duration: 60, isMultitask: false },
-    10: { title: 'Teams Sync / Client Standup', category: 'meeting', eisenhower: 'q1', duration: 45, isMultitask: false },
-    14: { title: 'Office Work (Core Execution & Client Tasks)', category: 'maintenance', eisenhower: 'q1', duration: 60, isMultitask: false },
-    15: { title: 'Office Work (Core Execution & Client Tasks)', category: 'maintenance', eisenhower: 'q1', duration: 60, isMultitask: false },
-    16: { title: 'Office Work (Core Execution & Client Tasks)', category: 'maintenance', eisenhower: 'q1', duration: 60, isMultitask: false },
-    17: { title: 'Office Work (Core Execution & Client Tasks)', category: 'maintenance', eisenhower: 'q1', duration: 60, isMultitask: false }
-  };
+  startSelect.innerHTML = '';
+  endSelect.innerHTML = '';
+
+  for (let m = 0; m < 1440; m += 15) {
+    const timeStr = minsToTimeStr(m);
+    
+    const optStart = document.createElement('option');
+    optStart.value = m;
+    optStart.textContent = timeStr;
+    startSelect.appendChild(optStart);
+
+    const optEnd = document.createElement('option');
+    optEnd.value = m;
+    optEnd.textContent = timeStr;
+    endSelect.appendChild(optEnd);
+  }
+
+  startSelect.value = 540; // 09:00 AM
+  endSelect.value = 600;   // 10:00 AM
+  updateModalDurationDisplay();
+}
+
+function updateModalDurationDisplay() {
+  const startSelect = document.getElementById('modalStartHourSelect');
+  const endSelect = document.getElementById('modalEndHourSelect');
+  const badge = document.getElementById('modalDurationBadge');
+  if (!startSelect || !endSelect || !badge) return;
+
+  const startMins = parseInt(startSelect.value, 10);
+  const endMins = parseInt(endSelect.value, 10);
+
+  let diff = endMins - startMins;
+  if (diff <= 0) diff += 1440;
+
+  badge.textContent = formatDurationMins(diff);
+}
+
+// --- MODAL CONTROLLER ---
+function openPlanModal(planId = null, defaultStartHour = null) {
+  playSfx('tap');
+  currentEditingPlanId = planId;
+
+  const modal = document.getElementById('entryModal');
+  const titleInput = document.getElementById('modalActivityTitleInput');
+  const modalTitle = document.getElementById('modalTitle');
+  const startSelect = document.getElementById('modalStartHourSelect');
+  const endSelect = document.getElementById('modalEndHourSelect');
+  const repeatSelect = document.getElementById('modalRepeatSelect');
+  const multiCheck = document.getElementById('modalMultitaskCheckbox');
+  const deleteBtn = document.getElementById('modalDeleteBtn');
+  const customDaysRow = document.getElementById('modalCustomDaysRow');
+
+  if (planId) {
+    const plan = appData.plans.find(p => p.id === planId);
+    if (!plan) return;
+
+    modalTitle.textContent = 'Edit Plan';
+    titleInput.value = plan.title;
+    modalActiveCategory = plan.category || 'office';
+    startSelect.value = plan.startMins;
+    endSelect.value = plan.endMins;
+    repeatSelect.value = plan.repeat || 'today';
+    multiCheck.checked = Boolean(plan.isMultitask);
+    modalSelectedDays = plan.repeatDays && plan.repeatDays.length ? [...plan.repeatDays] : [1, 3, 5];
+
+    deleteBtn.classList.remove('hidden');
+  } else {
+    modalTitle.textContent = 'Schedule Plan';
+    modalActiveCategory = 'office';
+    titleInput.value = 'Office';
+
+    let sMins = 540; // 9:00 AM default
+    if (defaultStartHour !== null) {
+      sMins = defaultStartHour * 60;
+    }
+    startSelect.value = sMins;
+    endSelect.value = (sMins + 240) % 1440; // +4h default for office
+
+    repeatSelect.value = 'today';
+    multiCheck.checked = false;
+    modalSelectedDays = [1, 3, 5];
+
+    deleteBtn.classList.add('hidden');
+  }
+
+  // Update preset chip highlights
+  document.querySelectorAll('#modalPresetChips .modal-preset-chip').forEach(btn => {
+    if (btn.getAttribute('data-cat') === modalActiveCategory) {
+      btn.classList.add('border-emerald-500', 'bg-emerald-500/20');
+    } else {
+      btn.classList.remove('border-emerald-500', 'bg-emerald-500/20');
+    }
+  });
+
+  // Custom days visibility
+  if (repeatSelect.value === 'custom') {
+    customDaysRow.classList.remove('hidden');
+  } else {
+    customDaysRow.classList.add('hidden');
+  }
+  updateCustomDayPills();
+  updateModalDurationDisplay();
+
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+}
+
+function closePlanModal() {
+  playSfx('tap');
+  const modal = document.getElementById('entryModal');
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+  currentEditingPlanId = null;
+}
+
+function updateCustomDayPills() {
+  document.querySelectorAll('#modalDayPillGroup .day-select-pill').forEach(pill => {
+    const day = parseInt(pill.getAttribute('data-day'), 10);
+    if (modalSelectedDays.includes(day)) {
+      pill.className = 'day-select-pill btn-press py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/50 text-emerald-400 text-xs font-black text-center shadow-sm';
+    } else {
+      pill.className = 'day-select-pill btn-press py-1.5 rounded-xl bg-surface-800 border border-surface-700 text-slate-400 text-xs font-black text-center';
+    }
+  });
+}
+
+function saveModalPlan() {
+  const titleInput = document.getElementById('modalActivityTitleInput');
+  const startSelect = document.getElementById('modalStartHourSelect');
+  const endSelect = document.getElementById('modalEndHourSelect');
+  const repeatSelect = document.getElementById('modalRepeatSelect');
+  const multiCheck = document.getElementById('modalMultitaskCheckbox');
+
+  const title = titleInput.value.trim() || 'Focus Session';
+  const startMins = parseInt(startSelect.value, 10);
+  const endMins = parseInt(endSelect.value, 10);
+  const repeat = repeatSelect.value;
+  const isMultitask = multiCheck.checked;
+
+  let durationMins = endMins - startMins;
+  if (durationMins <= 0) durationMins += 1440;
+
+  if (currentEditingPlanId) {
+    const plan = appData.plans.find(p => p.id === currentEditingPlanId);
+    if (plan) {
+      plan.title = title;
+      plan.category = modalActiveCategory;
+      plan.startMins = startMins;
+      plan.endMins = endMins;
+      plan.durationMins = durationMins;
+      plan.repeat = repeat;
+      plan.repeatDays = repeat === 'custom' ? [...modalSelectedDays] : [];
+      plan.isMultitask = isMultitask;
+    }
+  } else {
+    const newPlan = {
+      id: 'plan_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+      title: title,
+      category: modalActiveCategory,
+      startMins: startMins,
+      endMins: endMins,
+      durationMins: durationMins,
+      repeat: repeat,
+      repeatDays: repeat === 'custom' ? [...modalSelectedDays] : [],
+      date: currentDateStr,
+      isMultitask: isMultitask,
+      completedDates: {}
+    };
+    appData.plans.push(newPlan);
+  }
 
   saveAppData();
+  playSfx('check');
+  closePlanModal();
+  refreshAllViews();
+}
+
+function deleteModalPlan() {
+  if (!currentEditingPlanId) return;
+  if (confirm('Delete this plan?')) {
+    appData.plans = appData.plans.filter(p => p.id !== currentEditingPlanId);
+    saveAppData();
+    playSfx('tap');
+    closePlanModal();
+    refreshAllViews();
+  }
 }
 
 // --- SETUP EVENT LISTENERS ---
 function setupEventListeners() {
-  // Unified 4 Navigation Tabs
+  // Navigation Tabs
   const navMap = {
     navTabToday: 'today',
     navTabHabits: 'habits',
@@ -394,26 +588,20 @@ function setupEventListeners() {
     });
   });
 
-  // Sound Toggle Function
-  function toggleSoundState() {
+  // Sound Buttons
+  const soundBtn = document.getElementById('soundToggleBtn');
+  const settingsSoundBtn = document.getElementById('settingsSoundBtn');
+  const toggleSound = () => {
     if (!appSettings.player) appSettings.player = { xp: 850, soundEnabled: true };
     appSettings.player.soundEnabled = !appSettings.player.soundEnabled;
     saveSettings();
-    updatePlayerHeader();
-    if (appSettings.player.soundEnabled) playSfx('tap');
-  }
-
-  document.getElementById('soundToggleBtn')?.addEventListener('click', toggleSoundState);
-  document.getElementById('settingsSoundBtn')?.addEventListener('click', toggleSoundState);
-
-  // Today Quick Button
-  document.getElementById('todayQuickBtn')?.addEventListener('click', () => {
     playSfx('tap');
-    currentDateStr = getTodayDateStr();
-    refreshAllViews();
-  });
+    updatePlayerHeader();
+  };
+  soundBtn?.addEventListener('click', toggleSound);
+  settingsSoundBtn?.addEventListener('click', toggleSound);
 
-  // Week Navigation (< Previous Week | Next Week >)
+  // Week & Day Navigation
   document.getElementById('prevWeekBtn')?.addEventListener('click', () => {
     playSfx('tap');
     navigateWeek(-1);
@@ -422,160 +610,177 @@ function setupEventListeners() {
     playSfx('tap');
     navigateWeek(1);
   });
-
-  // Day Type Switcher Pills (Work / Wknd / PTO / Rest)
-  document.querySelectorAll('#dayTypePillGroup .day-type-pill').forEach(btn => {
-    btn.addEventListener('click', () => {
-      playSfx('tap');
-      const type = btn.getAttribute('data-type');
-      setDayType(type);
-    });
+  document.getElementById('prevDayBtn')?.addEventListener('click', () => {
+    playSfx('tap');
+    navigateDay(-1);
+  });
+  document.getElementById('nextDayBtn')?.addEventListener('click', () => {
+    playSfx('tap');
+    navigateDay(1);
+  });
+  document.getElementById('todayJumpBtn')?.addEventListener('click', () => {
+    playSfx('tap');
+    currentDateStr = getTodayDateStr();
+    refreshAllViews();
   });
 
-  // Blueprint Action Buttons
-  document.getElementById('applyTodayBlueprintBtn')?.addEventListener('click', applyTodayBlueprint);
-  document.getElementById('applyWeekBlueprintBtn')?.addEventListener('click', applyWeekBlueprint);
-
-  // Floating Plus Button & Open Plan Modal
+  // Floating Plus & Open Plan Modal
   document.getElementById('floatingPlusBtn')?.addEventListener('click', () => {
-    playSfx('tap');
-    openEntryModal(new Date().getHours(), 120);
+    openPlanModal(null, new Date().getHours());
   });
   document.getElementById('openPlanModalBtn')?.addEventListener('click', () => {
-    playSfx('tap');
-    openEntryModal(new Date().getHours(), 120);
+    openPlanModal(null, new Date().getHours());
   });
-  document.getElementById('closeEntryModalBtn')?.addEventListener('click', () => {
-    playSfx('tap');
-    closeEntryModal();
-  });
+  document.getElementById('closeEntryModalBtn')?.addEventListener('click', closePlanModal);
 
-  // Quick Routine & Teams Template Buttons
-  document.querySelectorAll('.plan-tpl-btn').forEach(btn => {
+  // Quick Chips on Top of Today View
+  document.querySelectorAll('.quick-chip-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      playSfx('tap');
-      const tpl = btn.getAttribute('data-tpl');
-      if (tpl === 'teams') addQuickPlan(new Date().getHours(), 45, 'Teams Meeting / Sync', 'meeting', 'q1');
-      else if (tpl === 'office') addQuickPlan(14, 240, 'Office Work (Core Duties)', 'maintenance', 'q1');
-      else if (tpl === 'yt') addQuickPlan(7, 120, 'YouTube Finance Automation', 'investment', 'q2');
-      else if (tpl === 'wfh') addQuickPlan(19, 30, 'Work From Home (Evening Shift)', 'maintenance', 'q1');
-      else if (tpl === 'sleep') addQuickPlan(23, 480, 'Night Sleep & Recovery', 'sleep', 'q2');
-      addXP(15, 'Block Added');
-    });
-  });
+      const act = btn.getAttribute('data-activity');
+      const cat = btn.getAttribute('data-cat');
+      openPlanModal(null, new Date().getHours());
+      
+      const titleInput = document.getElementById('modalActivityTitleInput');
+      if (titleInput) titleInput.value = act;
+      modalActiveCategory = cat;
 
-  // Duration Buttons in Modal
-  document.querySelectorAll('#modalDurBtns .dur-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      playSfx('tap');
-      const minsVal = btn.getAttribute('data-mins');
-      const customRow = document.getElementById('customDurationRow');
+      const durMeta = CATEGORY_META[cat];
+      if (durMeta) {
+        const startSelect = document.getElementById('modalStartHourSelect');
+        const endSelect = document.getElementById('modalEndHourSelect');
+        const sMins = parseInt(startSelect.value, 10);
+        endSelect.value = (sMins + durMeta.defaultDur) % 1440;
+        updateModalDurationDisplay();
+      }
 
-      document.querySelectorAll('#modalDurBtns .dur-btn').forEach(b => {
-        b.className = 'dur-btn btn-press py-2 rounded-xl bg-surface-800 text-slate-300 text-center font-bold border border-surface-750 transition';
+      document.querySelectorAll('#modalPresetChips .modal-preset-chip').forEach(b => {
+        if (b.getAttribute('data-cat') === cat) {
+          b.classList.add('border-emerald-500', 'bg-emerald-500/20');
+        } else {
+          b.classList.remove('border-emerald-500', 'bg-emerald-500/20');
+        }
       });
-      btn.className = 'dur-btn btn-press py-2 rounded-xl bg-emerald-500/20 text-emerald-400 text-center font-black border border-emerald-500/40 transition';
-
-      if (minsVal === 'custom') {
-        customRow.classList.remove('hidden');
-        const h = parseInt(document.getElementById('customHoursInput')?.value, 10) || 0;
-        const m = parseInt(document.getElementById('customMinsInput')?.value, 10) || 0;
-        selectedDurationMins = Math.max(5, h * 60 + m);
-      } else {
-        customRow.classList.add('hidden');
-        selectedDurationMins = parseInt(minsVal, 10);
-      }
-      updateModalSpanSummary();
     });
   });
 
-  function updateCustomDuration() {
-    const h = parseInt(document.getElementById('customHoursInput')?.value, 10) || 0;
-    const m = parseInt(document.getElementById('customMinsInput')?.value, 10) || 0;
-    selectedDurationMins = Math.max(5, h * 60 + m);
-    updateModalSpanSummary();
-  }
-  document.getElementById('customHoursInput')?.addEventListener('input', updateCustomDuration);
-  document.getElementById('customMinsInput')?.addEventListener('input', updateCustomDuration);
-
-  // Preset Tiles in Modal
-  document.querySelectorAll('.preset-tile').forEach(btn => {
+  // Modal Preset Chips
+  document.querySelectorAll('#modalPresetChips .modal-preset-chip').forEach(btn => {
     btn.addEventListener('click', () => {
       playSfx('tap');
-      const preset = btn.getAttribute('data-preset');
-      const dur = btn.getAttribute('data-dur');
-      const isMulti = btn.getAttribute('data-multi') === 'true';
+      const name = btn.getAttribute('data-name');
+      const cat = btn.getAttribute('data-cat');
+      modalActiveCategory = cat;
 
-      document.getElementById('modalActivityTitleInput').value = preset;
-      document.getElementById('modalMultitaskCheckbox').checked = isMulti;
+      const titleInput = document.getElementById('modalActivityTitleInput');
+      if (titleInput) titleInput.value = name;
 
-      if (dur) {
-        selectedDurationMins = parseInt(dur, 10);
-        document.querySelectorAll('#modalDurBtns .dur-btn').forEach(b => {
-          b.className = 'dur-btn btn-press py-2 rounded-xl bg-surface-800 text-slate-300 text-center font-bold border border-surface-750 transition';
-          if (b.getAttribute('data-mins') == dur) {
-            b.className = 'dur-btn btn-press py-2 rounded-xl bg-emerald-500/20 text-emerald-400 text-center font-black border border-emerald-500/40 transition';
-          }
-        });
-        document.getElementById('customDurationRow')?.classList.add('hidden');
-        updateModalSpanSummary();
+      const meta = CATEGORY_META[cat];
+      if (meta) {
+        const startSelect = document.getElementById('modalStartHourSelect');
+        const endSelect = document.getElementById('modalEndHourSelect');
+        const sMins = parseInt(startSelect.value, 10);
+        endSelect.value = (sMins + meta.defaultDur) % 1440;
+        updateModalDurationDisplay();
       }
 
-      document.querySelectorAll('.preset-tile').forEach(b => b.classList.remove('ring-2', 'ring-emerald-400'));
-      btn.classList.add('ring-2', 'ring-emerald-400');
+      document.querySelectorAll('#modalPresetChips .modal-preset-chip').forEach(b => {
+        b.classList.remove('border-emerald-500', 'bg-emerald-500/20');
+      });
+      btn.classList.add('border-emerald-500', 'bg-emerald-500/20');
     });
   });
 
-  document.getElementById('modalStartHourSelect')?.addEventListener('change', (e) => {
-    playSfx('tap');
-    currentEditingHour = parseInt(e.target.value, 10);
-    updateModalSpanSummary();
+  // Time Selects change
+  document.getElementById('modalStartHourSelect')?.addEventListener('change', updateModalDurationDisplay);
+  document.getElementById('modalEndHourSelect')?.addEventListener('change', updateModalDurationDisplay);
+
+  // Tactile Game-like Extend Buttons
+  document.querySelectorAll('#modalExtendBtnsGroup .extend-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      playSfx('tap');
+      const delta = parseInt(btn.getAttribute('data-delta'), 10);
+      const endSelect = document.getElementById('modalEndHourSelect');
+      if (!endSelect) return;
+
+      let cur = parseInt(endSelect.value, 10);
+      cur = ((cur + delta) % 1440 + 1440) % 1440;
+      endSelect.value = cur;
+      updateModalDurationDisplay();
+    });
   });
 
-  // Save & Delete Modal Entry
-  document.getElementById('modalSaveBtn')?.addEventListener('click', saveModalEntry);
-  document.getElementById('modalDeleteBtn')?.addEventListener('click', deleteCurrentEntry);
+  // Repeat Selector Change
+  document.getElementById('modalRepeatSelect')?.addEventListener('change', (e) => {
+    playSfx('tap');
+    const customDaysRow = document.getElementById('modalCustomDaysRow');
+    if (e.target.value === 'custom') {
+      customDaysRow?.classList.remove('hidden');
+    } else {
+      customDaysRow?.classList.add('hidden');
+    }
+  });
 
-  // Backup & Export
-  document.getElementById('exportCsvBtn')?.addEventListener('click', () => {
-    playSfx('tap');
-    exportCsvData();
+  // Custom Day Toggle Pills
+  document.querySelectorAll('#modalDayPillGroup .day-select-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      playSfx('tap');
+      const day = parseInt(pill.getAttribute('data-day'), 10);
+      if (modalSelectedDays.includes(day)) {
+        modalSelectedDays = modalSelectedDays.filter(d => d !== day);
+      } else {
+        modalSelectedDays.push(day);
+      }
+      updateCustomDayPills();
+    });
   });
-  document.getElementById('backupJsonBtn')?.addEventListener('click', () => {
-    playSfx('tap');
-    backupJsonData();
-  });
+
+  // Modal Save & Delete
+  document.getElementById('modalSaveBtn')?.addEventListener('click', saveModalPlan);
+  document.getElementById('modalDeleteBtn')?.addEventListener('click', deleteModalPlan);
+
+  // Backup & Reset in Settings
+  document.getElementById('exportCsvBtn')?.addEventListener('click', exportCsvData);
+  document.getElementById('backupJsonBtn')?.addEventListener('click', backupJsonData);
   document.getElementById('importJsonInput')?.addEventListener('change', importJsonData);
   document.getElementById('loadSampleDataBtn')?.addEventListener('click', () => {
     playSfx('tap');
-    if (confirm('Reset and load sample schedule for today?')) {
-      injectSampleDayData(currentDateStr);
+    if (confirm('Reset to standard clean schedule?')) {
+      appData.plans = JSON.parse(JSON.stringify(DEFAULT_PLANS));
+      saveAppData();
       refreshAllViews();
     }
   });
   document.getElementById('clearTodayBtn')?.addEventListener('click', () => {
     playSfx('tap');
-    if (confirm("Clear today's schedule and audit?")) {
-      const day = ensureDayRecord(currentDateStr);
-      day.plans = [];
-      day.entries = {};
+    if (confirm("Clear all plans for today?")) {
+      appData.plans = appData.plans.filter(p => p.repeat !== 'today' || p.date !== currentDateStr);
       saveAppData();
       refreshAllViews();
     }
   });
+
+  // Settings Goal Slider
+  document.getElementById('settingsGoalInput')?.addEventListener('input', (e) => {
+    const val = parseFloat(e.target.value);
+    document.getElementById('settingsGoalDisplay').textContent = `${val.toFixed(1)} hrs`;
+    appSettings.dailyGoalHours = val;
+    saveSettings();
+    renderTodayTimeline();
+  });
+}
+
+// --- NAVIGATION & DATE SWITCHING ---
+function navigateDay(delta) {
+  const d = parseDateStr(currentDateStr);
+  d.setDate(d.getDate() + delta);
+  currentDateStr = formatDateStr(d);
+  refreshAllViews();
 }
 
 function navigateWeek(deltaWeeks) {
   const d = parseDateStr(currentDateStr);
   d.setDate(d.getDate() + (deltaWeeks * 7));
   currentDateStr = formatDateStr(d);
-  refreshAllViews();
-}
-
-function setDayType(newType) {
-  const day = ensureDayRecord(currentDateStr);
-  day.dayType = newType;
-  saveAppData();
   refreshAllViews();
 }
 
@@ -601,7 +806,7 @@ function switchTab(tabId) {
     }
   });
 
-  if (tabId === 'today') renderTodayFlow();
+  if (tabId === 'today') renderTodayTimeline();
   else if (tabId === 'habits') renderHabitGrids();
   else if (tabId === 'stats') renderStats();
 
@@ -612,15 +817,14 @@ function refreshAllViews() {
   updatePlayerHeader();
   renderDayHeader();
   renderWeekCapsules();
-  renderTodayFlow();
+  renderTodayTimeline();
   renderHabitGrids();
   renderStats();
   if (window.lucide) lucide.createIcons();
 }
 
-// --- RENDER DAY HEADER & TYPE BAR ---
+// --- RENDER DAY HEADER ---
 function renderDayHeader() {
-  const day = ensureDayRecord(currentDateStr);
   const activeDate = parseDateStr(currentDateStr);
   const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -643,55 +847,6 @@ function renderDayHeader() {
 
   const rangeLabel = document.getElementById('weekRangeLabel');
   if (rangeLabel) rangeLabel.textContent = getWeekRangeText(currentDateStr);
-
-  const dayTypeBadge = document.getElementById('dayTypeBadge');
-  const typeLabels = {
-    workday: { text: '💼 Workday', bg: 'bg-blue-500/20 text-blue-300 border border-blue-500/30' },
-    weekend: { text: '🌴 Weekend', bg: 'bg-amber-500/20 text-amber-300 border border-amber-500/30' },
-    holiday: { text: '🏖️ PTO / Holiday', bg: 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' },
-    rest: { text: '🎉 Rest Day', bg: 'bg-pink-500/20 text-pink-300 border border-pink-500/30' }
-  };
-  const activeConfig = typeLabels[day.dayType] || typeLabels.workday;
-  if (dayTypeBadge) {
-    dayTypeBadge.textContent = activeConfig.text;
-    dayTypeBadge.className = `text-xs font-black px-2.5 py-1 rounded-xl ${activeConfig.bg}`;
-  }
-
-  document.querySelectorAll('#dayTypePillGroup .day-type-pill').forEach(pill => {
-    const pType = pill.getAttribute('data-type');
-    if (pType === day.dayType) {
-      pill.className = 'day-type-pill btn-press text-xs font-black py-2 rounded-xl bg-surface-800 text-white shadow-sm border border-surface-700 transition flex items-center justify-center gap-1.5';
-    } else {
-      pill.className = 'day-type-pill btn-press text-xs font-black py-2 rounded-xl text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5';
-    }
-  });
-
-  const holidayBanner = document.getElementById('holidayRestBanner');
-  const holidayTitle = document.getElementById('holidayRestTitle');
-  const holidaySub = document.getElementById('holidayRestSubtitle');
-  if (holidayBanner) {
-    if (day.dayType === 'holiday') {
-      holidayBanner.classList.remove('hidden');
-      if (holidayTitle) holidayTitle.innerHTML = '🛡️ Streak Protection Shield Active';
-      if (holidaySub) holidaySub.textContent = 'Holiday / PTO Mode: Habit streaks are frozen and preserved, and the 5-Hour Focus Quest is relaxed.';
-    } else if (day.dayType === 'rest') {
-      holidayBanner.classList.remove('hidden');
-      if (holidayTitle) holidayTitle.innerHTML = '🛡️ Streak Protection Shield Active';
-      if (holidaySub) holidaySub.textContent = 'Attending a function or taking full rest? Zero guilt! Your streaks are protected without breaking.';
-    } else {
-      holidayBanner.classList.add('hidden');
-    }
-  }
-
-  const bpTitle = document.getElementById('blueprintTitle');
-  const bpSub = document.getElementById('blueprintSubtitle');
-  if (day.dayType === 'weekend') {
-    if (bpTitle) bpTitle.textContent = 'Weekend Rhythm (Teams Style)';
-    if (bpSub) bpSub.textContent = '10 AM Deep Sprint • 4 PM Rest • 8h Sleep';
-  } else {
-    if (bpTitle) bpTitle.textContent = 'Workday Blueprint (Teams Style)';
-    if (bpSub) bpSub.textContent = 'Office 2-6 PM • WFH 7-7:30 PM • 2h YouTube';
-  }
 }
 
 // --- TOP WEEK CAPSULE BAR ---
@@ -714,23 +869,17 @@ function renderWeekCapsules() {
     const isSelected = dateKey === currentDateStr;
     const isWeekend = (i === 0 || i === 6);
 
-    const dayData = appData[dateKey];
-    let focusHours = 0;
-    const dayType = dayData?.dayType || (isWeekend ? 'weekend' : 'workday');
-
-    if (dayData && dayData.entries) {
-      Object.values(dayData.entries).forEach(e => {
-        if (!e.isMultitask && (e.category === 'investment' || e.category === 'maintenance' || e.category === 'meeting')) {
-          focusHours += ((e.duration || 60) / 60);
+    // Calculate completed hours for that day
+    let compHours = 0;
+    const plansForDate = getPlansForDate(dateKey);
+    plansForDate.forEach(p => {
+      if (p.completedDates && p.completedDates[dateKey]) {
+        if (!p.isMultitask && (p.category === 'business' || p.category === 'office' || p.category === 'meeting' || p.category === 'workout')) {
+          compHours += (p.durationMins / 60);
         }
-      });
-    }
-    const pct = Math.min(100, Math.round((focusHours / 5.0) * 100));
-
-    let typeIcon = '';
-    if (dayType === 'holiday') typeIcon = '🏖️';
-    else if (dayType === 'rest') typeIcon = '🎉';
-    else if (isWeekend) typeIcon = '🌴';
+      }
+    });
+    const pct = Math.min(100, Math.round((compHours / (appSettings.dailyGoalHours || 5.0)) * 100));
 
     const capsule = document.createElement('button');
     capsule.type = 'button';
@@ -743,12 +892,9 @@ function renderWeekCapsules() {
     }`;
 
     capsule.innerHTML = `
-      <div class="flex items-center gap-0.5">
-        <span class="text-[11px] font-bold ${isSelected ? 'text-emerald-400' : isWeekend ? 'text-amber-400' : 'text-slate-400'}">${dayLetters[i]}</span>
-        ${typeIcon ? `<span class="text-[10px]">${typeIcon}</span>` : ''}
-      </div>
+      <span class="text-[11px] font-bold ${isSelected ? 'text-emerald-400' : isWeekend ? 'text-amber-400' : 'text-slate-400'}">${dayLetters[i]}</span>
       <span class="text-sm font-black my-0.5">${dateObj.getDate()}</span>
-      <div class="w-5 h-1 rounded-full ${dayType === 'holiday' || dayType === 'rest' ? 'bg-indigo-400' : (pct >= 100 ? 'bg-cyan-400 shadow-glow-cyan' : (pct > 0 ? 'bg-emerald-500' : 'bg-surface-700'))}"></div>
+      <div class="w-5 h-1 rounded-full ${pct >= 100 ? 'bg-cyan-400 shadow-glow-cyan' : (pct > 0 ? 'bg-emerald-500' : 'bg-surface-700')}"></div>
     `;
 
     capsule.addEventListener('click', () => {
@@ -761,117 +907,61 @@ function renderWeekCapsules() {
   }
 }
 
-// --- APPLY BLUEPRINTS ---
-function applyTodayBlueprint() {
-  playSfx('swoosh');
-  const day = ensureDayRecord(currentDateStr);
-  const isWeekend = day.dayType === 'weekend';
-  const blueprint = isWeekend ? WEEKEND_BLUEPRINT : WORKDAY_BLUEPRINT;
+// --- FILTER PLANS FOR A SPECIFIC DATE ---
+function getPlansForDate(dateStr) {
+  const d = parseDateStr(dateStr);
+  const dayOfWeek = d.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+  const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
 
-  blueprint.forEach(block => {
-    const exists = day.plans.some(p => p.startHour === block.startHour && p.title === block.title);
-    if (!exists) {
-      day.plans.push({
-        id: 'plan_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-        startHour: block.startHour,
-        durationMins: block.durationMins,
-        title: block.title,
-        category: block.category,
-        eisenhower: block.eisenhower,
-        isMultitask: block.isMultitask,
-        confirmed: false
-      });
-    }
+  return (appData.plans || []).filter(plan => {
+    if (plan.repeat === 'today') return plan.date === dateStr;
+    if (plan.repeat === 'daily') return true;
+    if (plan.repeat === 'weekdays') return !isWeekend;
+    if (plan.repeat === 'weekends') return isWeekend;
+    if (plan.repeat === 'custom') return (plan.repeatDays || []).includes(dayOfWeek);
+    return false;
   });
-
-  saveAppData();
-  addXP(30, 'Blueprint Applied');
-  refreshAllViews();
 }
 
-function applyWeekBlueprint() {
-  playSfx('swoosh');
-  const activeDate = parseDateStr(currentDateStr);
-  const currentDayOfWeek = activeDate.getDay();
-  const monday = new Date(activeDate);
-  const diffToMon = (currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek);
-  monday.setDate(activeDate.getDate() + diffToMon);
-
-  let appliedCount = 0;
-  for (let i = 0; i < 5; i++) {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    const dateKey = formatDateStr(d);
-    const day = ensureDayRecord(dateKey);
-
-    if (day.dayType === 'holiday' || day.dayType === 'rest') continue;
-
-    day.dayType = 'workday';
-    WORKDAY_BLUEPRINT.forEach(block => {
-      const exists = day.plans.some(p => p.startHour === block.startHour && p.title === block.title);
-      if (!exists) {
-        day.plans.push({
-          id: 'plan_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-          startHour: block.startHour,
-          durationMins: block.durationMins,
-          title: block.title,
-          category: block.category,
-          eisenhower: block.eisenhower,
-          isMultitask: block.isMultitask,
-          confirmed: false
-        });
-        appliedCount++;
-      }
-    });
-  }
-
-  saveAppData();
-  playSfx('quest');
-  fireConfetti();
-  addXP(100, 'Weekly Schedule Synced');
-  alert('Workday Blueprint scheduled for Monday through Friday! Your calendar is ready without any morning friction.');
-  refreshAllViews();
-}
-
-// --- UNIFIED VIEW: TODAY (SCHEDULE & 1-TAP COMPLETION AUDIT) ---
-function renderTodayFlow() {
-  const container = document.getElementById('plannerListContainer');
+// --- RENDER CALENDAR MEETING TIMELINE (ZOOM / TEAMS STYLE) ---
+function renderTodayTimeline() {
+  const container = document.getElementById('plannerTimelineContainer');
   if (!container) return;
   container.innerHTML = '';
-  const day = ensureDayRecord(currentDateStr);
-  const plans = day.plans || [];
-  const entries = day.entries || {};
-  const isHolidayOrRest = day.dayType === 'holiday' || day.dayType === 'rest';
+
+  const plansForToday = getPlansForDate(currentDateStr);
+  plansForToday.sort((a, b) => a.startMins - b.startMins);
 
   // 1. Calculate focused hours
-  let focusHours = 0;
+  let focusedHours = 0;
   let totalLoggedHours = 0;
 
-  Object.values(entries).forEach(e => {
-    const dur = (e.duration || 60) / 60;
-    totalLoggedHours += dur;
-    if (!e.isMultitask && (e.category === 'investment' || e.category === 'maintenance' || e.category === 'meeting')) {
-      focusHours += dur;
+  plansForToday.forEach(plan => {
+    const isDone = Boolean(plan.completedDates && plan.completedDates[currentDateStr]);
+    const durHours = plan.durationMins / 60;
+    if (isDone) {
+      totalLoggedHours += durHours;
+      if (!plan.isMultitask && (plan.category === 'business' || plan.category === 'office' || plan.category === 'meeting' || plan.category === 'workout')) {
+        focusedHours += durHours;
+      }
     }
   });
 
-  const goal = isHolidayOrRest ? 2.0 : 5.0;
-  const pct = Math.min(100, Math.round((focusHours / goal) * 100));
+  const goal = appSettings.dailyGoalHours || 5.0;
+  const pct = Math.min(100, Math.round((focusedHours / goal) * 100));
 
-  // Focus Quest Ring & Stats
-  document.getElementById('trackerFocusedHoursNumber').textContent = focusHours.toFixed(1);
+  // Focus Quest Ring & Stats Update
+  document.getElementById('trackerFocusedHoursNumber').textContent = focusedHours.toFixed(1);
   const denom = document.getElementById('trackerGoalDenominatorText');
   if (denom) denom.textContent = `/ ${goal.toFixed(1)}h Goal`;
   document.getElementById('trackerPercentageText').textContent = `${pct}%`;
   document.getElementById('trackerRingArc').setAttribute('stroke-dasharray', `${pct}, 100`);
 
   const questSub = document.getElementById('trackerQuestRemainingText');
-  if (isHolidayOrRest) {
-    questSub.textContent = '🎉 Rest & Recovery Mode: Quest is relaxed for today!';
-  } else if (focusHours >= goal) {
-    questSub.innerHTML = '<span class="text-cyan-400 font-bold">🏆 5-Hour Focus Quest Complete! Full dopamine unlocked!</span>';
+  if (focusedHours >= goal) {
+    questSub.innerHTML = '<span class="text-cyan-400 font-bold">🏆 5-Hour Focus Quest Complete! Dopamine unlocked!</span>';
   } else {
-    questSub.textContent = `Hit ${(goal - focusHours).toFixed(1)} more focused hours to unlock today's Trophy!`;
+    questSub.textContent = `Hit ${(goal - focusedHours).toFixed(1)} more focused hours to unlock today's Quest!`;
   }
 
   const planHoursBadge = document.getElementById('planTotalHoursBadge');
@@ -879,275 +969,251 @@ function renderTodayFlow() {
     planHoursBadge.textContent = `${totalLoggedHours.toFixed(1)}h logged`;
   }
 
-  // 2. Render Schedule Blocks
-  if (plans.length === 0) {
-    container.innerHTML = `
-      <div class="text-center py-12 text-slate-400 text-xs bg-surface-900/60 rounded-3xl border border-dashed border-surface-800 p-8 space-y-2">
-        <span class="text-3xl">📅</span>
-        <p class="font-bold text-white text-sm">No blocks scheduled for today.</p>
-        <p class="text-xs text-slate-400">Tap "Fill Day" above or tap any quick block chip to map your flow.</p>
-      </div>
-    `;
-    return;
+  // 2. Build Hourly Time Slots (06:00 AM to 11:00 PM)
+  const coveredHours = new Set();
+  plansForToday.forEach(p => {
+    const startH = Math.floor(p.startMins / 60);
+    const endH = Math.ceil((p.startMins + p.durationMins) / 60);
+    for (let h = startH + 1; h < endH; h++) {
+      coveredHours.add(h % 24);
+    }
+  });
+
+  for (let h = 6; h <= 23; h++) {
+    // Check if any plan starts in this hour
+    const plansStartingInHour = plansForToday.filter(p => Math.floor(p.startMins / 60) === h);
+
+    if (plansStartingInHour.length > 0) {
+      plansStartingInHour.forEach(plan => {
+        const isDone = Boolean(plan.completedDates && plan.completedDates[currentDateStr]);
+        const meta = CATEGORY_META[plan.category] || CATEGORY_META.office;
+
+        const row = document.createElement('div');
+        row.className = 'flex items-start gap-2.5 group';
+
+        const startTimeFormatted = minsToTimeStr(plan.startMins);
+        const endTimeFormatted = minsToTimeStr(plan.endMins);
+        const durFormatted = formatDurationMins(plan.durationMins);
+
+        let repeatBadgeText = '';
+        if (plan.repeat === 'daily') repeatBadgeText = '🔁 Daily';
+        else if (plan.repeat === 'weekdays') repeatBadgeText = '💼 Mon-Fri';
+        else if (plan.repeat === 'weekends') repeatBadgeText = '🌴 Weekend';
+        else if (plan.repeat === 'custom') repeatBadgeText = '🗓️ Custom';
+
+        row.innerHTML = `
+          <!-- Hour Label -->
+          <div class="w-16 shrink-0 text-right pt-2">
+            <span class="text-xs font-black text-slate-400 font-mono tracking-tighter">${startTimeFormatted}</span>
+          </div>
+
+          <!-- Meeting Style Card -->
+          <div class="flex-1 p-3.5 rounded-2xl border transition-all ${
+            isDone 
+              ? 'bg-surface-900/80 border-emerald-500/40 shadow-sm' 
+              : 'bg-surface-900 border-surface-800 hover:border-surface-700 shadow-sm'
+          }" style="border-left: 4px solid ${meta.borderLeft};">
+            
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-[10px] font-black px-2 py-0.5 rounded-lg" style="background-color: ${meta.bg}; color: ${meta.color}">
+                  ${meta.label}
+                </span>
+                <span class="text-[11px] font-bold text-slate-400">
+                  ${startTimeFormatted} - ${endTimeFormatted} (${durFormatted})
+                </span>
+                ${repeatBadgeText ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-surface-800 text-slate-400">${repeatBadgeText}</span>` : ''}
+              </div>
+
+              <!-- Action Controls -->
+              <div class="flex items-center gap-1 shrink-0">
+                <button type="button" class="plan-edit-btn btn-press p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-surface-800 transition" title="Edit">
+                  <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Title & Checkmark Row -->
+            <div class="flex items-center justify-between mt-2 pt-1 border-t border-surface-800/60">
+              <div class="flex items-center gap-2">
+                <h4 class="text-xs font-black ${isDone ? 'line-through text-slate-500' : 'text-white'}">${plan.title}</h4>
+                ${plan.isMultitask ? '<span class="text-[10px] font-bold text-amber-400">⚠️ Multitask</span>' : ''}
+              </div>
+
+              <!-- 1-Tap Completion Checkmark -->
+              <button type="button" class="plan-toggle-btn btn-press px-2.5 py-1 rounded-xl text-xs font-black flex items-center gap-1.5 transition ${
+                isDone 
+                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-glow-emerald' 
+                  : 'bg-surface-850 text-slate-400 border border-surface-750 hover:border-emerald-400 hover:text-emerald-300'
+              }">
+                <i data-lucide="${isDone ? 'check-circle' : 'circle'}" class="w-3.5 h-3.5 ${isDone ? 'stroke-[2.5]' : ''}"></i>
+                <span>${isDone ? 'Completed' : 'Mark Done'}</span>
+              </button>
+            </div>
+
+          </div>
+        `;
+
+        // Checkmark toggle
+        row.querySelector('.plan-toggle-btn').addEventListener('click', () => {
+          togglePlanCompletion(plan.id);
+        });
+
+        // Edit button
+        row.querySelector('.plan-edit-btn').addEventListener('click', () => {
+          openPlanModal(plan.id);
+        });
+
+        container.appendChild(row);
+      });
+    } else if (!coveredHours.has(h)) {
+      // Unscheduled Free Time Slot
+      const hourStr = minsToTimeStr(h * 60);
+      const freeRow = document.createElement('div');
+      freeRow.className = 'flex items-center gap-2.5 py-1';
+
+      freeRow.innerHTML = `
+        <div class="w-16 shrink-0 text-right">
+          <span class="text-xs font-bold text-slate-500 font-mono tracking-tighter">${hourStr}</span>
+        </div>
+        <button type="button" class="flex-1 py-2 px-3 rounded-2xl border border-dashed border-surface-800 hover:border-surface-700 bg-surface-950/40 hover:bg-surface-850/60 text-slate-500 hover:text-slate-300 text-xs font-bold flex items-center justify-between transition btn-press">
+          <span class="flex items-center gap-1.5">
+            <span class="text-slate-600">•</span> Free Time
+          </span>
+          <span class="text-[11px] text-emerald-400 font-bold flex items-center gap-1">
+            <i data-lucide="plus" class="w-3 h-3"></i> Schedule
+          </span>
+        </button>
+      `;
+
+      freeRow.querySelector('button').addEventListener('click', () => {
+        openPlanModal(null, h);
+      });
+
+      container.appendChild(freeRow);
+    }
   }
 
-  plans.sort((a, b) => a.startHour - b.startHour);
-
-  plans.forEach(plan => {
-    const meta = CATEGORY_META[plan.category] || CATEGORY_META.maintenance;
-    const card = document.createElement('div');
-    const isDone = plan.confirmed;
-
-    card.className = `p-4 rounded-3xl border transition-all ${
-      isDone 
-        ? 'bg-surface-900/70 border-emerald-500/40 shadow-sm' 
-        : 'bg-surface-900 border-surface-800 hover:border-surface-700 shadow-sm'
-    }`;
-
-    const spanText = formatCustomSpan(plan.startHour, plan.durationMins);
-
-    card.innerHTML = `
-      <div class="flex items-center justify-between gap-3">
-        
-        <!-- Left: Checkmark & Title -->
-        <div class="flex items-center gap-3">
-          <button type="button" class="plan-toggle-btn btn-press w-8 h-8 rounded-2xl border-2 flex items-center justify-center shrink-0 transition-all ${
-            isDone 
-              ? 'bg-emerald-500 border-emerald-500 text-surface-950 shadow-glow-emerald font-black' 
-              : 'border-slate-600 bg-surface-850 hover:border-emerald-400 text-transparent'
-          }">
-            <i data-lucide="check" class="w-5 h-5 stroke-[3]"></i>
-          </button>
-
-          <div>
-            <span class="text-xs font-bold text-slate-400">${spanText}</span>
-            <h4 class="text-sm font-bold ${isDone ? 'line-through text-slate-400' : 'text-white'} leading-snug mt-0.5">${plan.title}</h4>
-            <div class="flex items-center gap-2 mt-1.5 flex-wrap">
-              <span class="text-[10px] font-black px-2 py-0.5 rounded-lg uppercase" style="background-color: ${meta.bg}; color: ${meta.color}">
-                ${meta.label}
-              </span>
-              ${plan.isMultitask ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30">⚠️ Multitask</span>' : ''}
-              ${isDone ? '<span class="text-[10px] font-black text-emerald-400 flex items-center gap-1">✓ Done & Counted</span>' : '<span class="text-[10px] font-semibold text-slate-500">Planned</span>'}
-            </div>
-          </div>
-        </div>
-
-        <!-- Right: Edit & Delete -->
-        <div class="flex items-center gap-1 shrink-0">
-          <button type="button" class="plan-edit-btn btn-press p-2 text-slate-400 hover:text-white rounded-xl hover:bg-surface-800 transition" title="Edit">
-            <i data-lucide="edit-2" class="w-4 h-4"></i>
-          </button>
-          <button type="button" class="plan-del-btn btn-press p-2 text-slate-500 hover:text-rose-400 rounded-xl hover:bg-surface-800 transition" title="Delete">
-            <i data-lucide="trash-2" class="w-4 h-4"></i>
-          </button>
-        </div>
-
-      </div>
-    `;
-
-    // 1-Tap Toggle: Instantly complete & count into audit!
-    card.querySelector('.plan-toggle-btn').addEventListener('click', () => {
-      togglePlanConfirmation(plan.id);
-    });
-
-    card.querySelector('.plan-edit-btn').addEventListener('click', () => {
-      playSfx('tap');
-      currentEditingPlanId = plan.id;
-      openEntryModal(plan.startHour, plan.durationMins);
-      document.getElementById('modalActivityTitleInput').value = plan.title;
-      document.getElementById('modalMultitaskCheckbox').checked = !!plan.isMultitask;
-    });
-
-    card.querySelector('.plan-del-btn').addEventListener('click', () => {
-      playSfx('tap');
-      deletePlan(plan.id);
-    });
-
-    container.appendChild(card);
-  });
+  if (window.lucide) lucide.createIcons();
 }
 
-function addQuickPlan(startHour, durationMins, title, category, eisenhower) {
-  const day = ensureDayRecord(currentDateStr);
-  day.plans.push({
-    id: 'plan_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-    startHour: startHour,
-    durationMins: durationMins,
-    title: title,
-    category: category,
-    eisenhower: eisenhower,
-    isMultitask: false,
-    confirmed: false
-  });
-  saveAppData();
-  renderTodayFlow();
-}
-
-function togglePlanConfirmation(planId) {
-  const day = ensureDayRecord(currentDateStr);
-  const plan = day.plans.find(p => p.id === planId);
+function togglePlanCompletion(planId) {
+  const plan = appData.plans.find(p => p.id === planId);
   if (!plan) return;
 
-  plan.confirmed = !plan.confirmed;
+  if (!plan.completedDates) plan.completedDates = {};
+  const currentStatus = Boolean(plan.completedDates[currentDateStr]);
+  plan.completedDates[currentDateStr] = !currentStatus;
 
-  if (plan.confirmed) {
-    pushPlanToVerifiedEntries(plan, currentDateStr);
+  saveAppData();
+
+  if (!currentStatus) {
     playSfx('check');
-    fireConfetti();
-    addXP(25, 'Block Completed');
+    addXP(25);
+    
+    // Check if quest completed
+    const plansForToday = getPlansForDate(currentDateStr);
+    let fHours = 0;
+    plansForToday.forEach(p => {
+      if (p.completedDates && p.completedDates[currentDateStr]) {
+        if (!p.isMultitask && (p.category === 'business' || p.category === 'office' || p.category === 'meeting' || p.category === 'workout')) {
+          fHours += (p.durationMins / 60);
+        }
+      }
+    });
+    if (fHours >= (appSettings.dailyGoalHours || 5.0)) {
+      playSfx('quest');
+      fireConfetti();
+    }
   } else {
-    removePlanFromVerifiedEntries(plan, currentDateStr);
     playSfx('tap');
   }
 
-  saveAppData();
-  refreshAllViews();
+  renderTodayTimeline();
 }
 
-function pushPlanToVerifiedEntries(plan, dateStr) {
-  const day = ensureDayRecord(dateStr);
-  const hoursSpan = Math.max(1, Math.round(plan.durationMins / 60));
-
-  for (let offset = 0; offset < hoursSpan; offset++) {
-    const rawH = plan.startHour + offset;
-    if (rawH < 24) {
-      day.entries[rawH] = {
-        title: plan.title,
-        category: plan.category,
-        eisenhower: plan.eisenhower,
-        isMultitask: plan.isMultitask,
-        duration: 60,
-        planId: plan.id
-      };
-    } else {
-      const d = parseDateStr(dateStr);
-      d.setDate(d.getDate() + 1);
-      const nextDateStr = formatDateStr(d);
-      const nextDay = ensureDayRecord(nextDateStr);
-      const nextH = rawH - 24;
-      if (nextH < 24) {
-        nextDay.entries[nextH] = {
-          title: plan.title,
-          category: plan.category,
-          eisenhower: plan.eisenhower,
-          isMultitask: plan.isMultitask,
-          duration: 60,
-          planId: plan.id
-        };
-      }
-    }
-  }
-}
-
-function removePlanFromVerifiedEntries(plan, dateStr) {
-  const day = ensureDayRecord(dateStr);
-  const hoursSpan = Math.max(1, Math.round(plan.durationMins / 60));
-  for (let offset = 0; offset < hoursSpan; offset++) {
-    const rawH = plan.startHour + offset;
-    if (rawH < 24) {
-      if (day.entries[rawH]?.planId === plan.id) delete day.entries[rawH];
-    } else {
-      const d = parseDateStr(dateStr);
-      d.setDate(d.getDate() + 1);
-      const nextDateStr = formatDateStr(d);
-      if (appData[nextDateStr]?.entries[rawH - 24]?.planId === plan.id) {
-        delete appData[nextDateStr].entries[rawH - 24];
-      }
-    }
-  }
-}
-
-function deletePlan(planId) {
-  const day = ensureDayRecord(currentDateStr);
-  const p = day.plans.find(x => x.id === planId);
-  if (p) {
-    if (p.confirmed) removePlanFromVerifiedEntries(p, currentDateStr);
-    day.plans = day.plans.filter(x => x.id !== planId);
-    saveAppData();
-    refreshAllViews();
-  }
-}
-
-// --- VIEW 2: HABITS (28-DAY MOMENTUM GRIDS) ---
+// --- VIEW 2: HABITS VIEW ---
 function renderHabitGrids() {
   const container = document.getElementById('habitGridCardsContainer');
+  const counter = document.getElementById('habitsCompletedCounter');
   if (!container) return;
   container.innerHTML = '';
-  const day = ensureDayRecord(currentDateStr);
-  const habitsConfig = appSettings.habits || DEFAULT_HABITS;
 
-  let completedToday = 0;
+  const habits = appSettings.habits || DEFAULT_HABITS;
+  if (!appData[currentDateStr]) appData[currentDateStr] = { habits: [] };
+  if (!appData[currentDateStr].habits) appData[currentDateStr].habits = habits.map(h => ({ id: h.id, completed: false }));
 
-  habitsConfig.forEach(cfg => {
-    const rec = (day.habits || []).find(h => h.id === cfg.id);
-    const isDone = rec ? rec.completed : false;
-    if (isDone) completedToday++;
+  const todayHabits = appData[currentDateStr].habits;
+  let doneCount = todayHabits.filter(h => h.completed).length;
 
-    const streak = calculateHabitStreak(cfg.id);
+  if (counter) counter.textContent = `${doneCount} / ${habits.length} Today`;
 
-    let gridDotsHtml = '';
-    const d = parseDateStr(currentDateStr);
-    for (let dayOffset = 27; dayOffset >= 0; dayOffset--) {
-      const checkDate = new Date(d);
-      checkDate.setDate(d.getDate() - dayOffset);
-      const checkKey = formatDateStr(checkDate);
-      const checkDayRec = appData[checkKey];
-      const isProtected = checkDayRec && (checkDayRec.dayType === 'holiday' || checkDayRec.dayType === 'rest');
-      const wasDone = checkDayRec?.habits?.find(h => h.id === cfg.id)?.completed;
+  habits.forEach(habit => {
+    const isDoneToday = Boolean(todayHabits.find(h => h.id === habit.id)?.completed);
 
-      let dotColor = '#1e293b';
-      if (wasDone) dotColor = cfg.color;
-      else if (isProtected) dotColor = '#6366f166';
+    // Compute 28-day matrix
+    const matrixDots = [];
+    let streak = 0;
+    const today = parseDateStr(currentDateStr);
 
-      gridDotsHtml += `
-        <div class="grid-dot" style="background-color: ${dotColor}" title="${checkKey}${isProtected ? ' (Holiday/Rest - Protected)' : ''}"></div>
-      `;
+    for (let i = 27; i >= 0; i--) {
+      const pastD = new Date(today);
+      pastD.setDate(today.getDate() - i);
+      const pastKey = formatDateStr(pastD);
+
+      const pastDayRecord = appData[pastKey];
+      const done = Boolean(pastDayRecord?.habits?.find(h => h.id === habit.id)?.completed);
+      matrixDots.push({ date: pastKey, done });
+      if (done) streak++;
+      else if (i < 7) streak = 0; // reset streak if missed recently
     }
 
     const card = document.createElement('div');
-    card.className = 'p-4 rounded-3xl bg-surface-900 border border-surface-800/80 shadow-sm space-y-3';
+    card.className = `p-4 rounded-3xl border transition-all ${
+      isDoneToday 
+        ? 'bg-surface-900 border-emerald-500/40 shadow-sm' 
+        : 'bg-surface-900 border-surface-800 shadow-sm'
+    }`;
+
+    let gridHtml = '<div class="grid grid-cols-7 gap-1.5 my-3">';
+    matrixDots.forEach(dot => {
+      gridHtml += `
+        <div class="h-3.5 rounded-md ${dot.done ? 'bg-emerald-400 shadow-glow-emerald' : 'bg-surface-800'}" title="${dot.date}"></div>
+      `;
+    });
+    gridHtml += '</div>';
+
     card.innerHTML = `
       <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0" style="background-color: ${cfg.color}22">
-            ${cfg.icon}
-          </div>
+        <div class="flex items-center gap-2.5">
+          <span class="text-xl">${habit.icon}</span>
           <div>
-            <h4 class="text-sm font-bold text-white leading-tight">${cfg.title}</h4>
-            <p class="text-xs text-amber-400 font-black flex items-center gap-1 mt-1">
-              <span>🔥</span> Streak: ${streak} days
-            </p>
+            <h4 class="text-xs font-bold text-white">${habit.title}</h4>
+            <span class="text-[11px] text-slate-400">🔥 ${streak} day momentum</span>
           </div>
         </div>
-
-        <button type="button" class="habit-check-btn btn-press w-11 h-11 rounded-2xl flex items-center justify-center transition-all ${
-          isDone ? 'text-surface-950 font-black shadow-glow-emerald' : 'bg-surface-850 border border-slate-700 text-slate-500 hover:border-slate-500'
-        }" style="${isDone ? `background-color: ${cfg.color}` : ''}">
-          <i data-lucide="check" class="w-6 h-6 stroke-[3]"></i>
+        <button type="button" class="habit-check-btn btn-press w-7 h-7 rounded-xl border flex items-center justify-center transition-all ${
+          isDoneToday 
+            ? 'bg-emerald-500 border-emerald-500 text-surface-950 shadow-glow-emerald' 
+            : 'border-slate-600 bg-surface-850 hover:border-emerald-400 text-transparent'
+        }">
+          <i data-lucide="check" class="w-4 h-4 stroke-[3]"></i>
         </button>
       </div>
-
-      <div class="pt-2 border-t border-surface-800 flex items-center justify-between">
-        <span class="text-[10px] font-bold text-slate-400 uppercase">28-Day Consistency Matrix</span>
-        <div class="grid grid-flow-col grid-rows-4 gap-1.5">
-          ${gridDotsHtml}
-        </div>
-      </div>
+      ${gridHtml}
     `;
 
     card.querySelector('.habit-check-btn').addEventListener('click', () => {
-      let r = day.habits.find(h => h.id === cfg.id);
-      if (!r) {
-        r = { id: cfg.id, completed: true };
-        day.habits.push(r);
+      const hRecord = todayHabits.find(h => h.id === habit.id);
+      if (hRecord) {
+        hRecord.completed = !hRecord.completed;
       } else {
-        r.completed = !r.completed;
+        todayHabits.push({ id: habit.id, completed: true });
       }
       saveAppData();
-      if (r.completed) {
+      if (!isDoneToday) {
         playSfx('check');
-        fireConfetti();
-        addXP(20, 'Habit Maintained');
+        addXP(15);
       } else {
         playSfx('tap');
       }
@@ -1157,106 +1223,79 @@ function renderHabitGrids() {
     container.appendChild(card);
   });
 
-  document.getElementById('habitsCompletedCounter').textContent = `${completedToday} / ${habitsConfig.length} Today`;
+  if (window.lucide) lucide.createIcons();
 }
 
-function calculateHabitStreak(habitId) {
-  let streak = 0;
-  const d = parseDateStr(currentDateStr);
-  for (let i = 0; i < 45; i++) {
-    const checkDate = new Date(d);
-    checkDate.setDate(d.getDate() - i);
-    const key = formatDateStr(checkDate);
-    const dayData = appData[key];
-
-    const isHolidayOrRest = dayData && (dayData.dayType === 'holiday' || dayData.dayType === 'rest');
-    if (isHolidayOrRest) {
-      continue;
-    }
-
-    const rec = dayData?.habits?.find(h => h.id === habitId);
-    if (rec && rec.completed) {
-      streak++;
-    } else if (i > 0) {
-      break;
-    }
-  }
-  return streak;
-}
-
-// --- VIEW 3: STATS & EXPENSE AUDIT ---
+// --- VIEW 3: STATS VIEW ---
 function renderStats() {
-  const day = ensureDayRecord(currentDateStr);
-  const entries = day.entries || {};
-
+  const plansForToday = getPlansForDate(currentDateStr);
+  const catSums = { meeting: 0, office: 0, business: 0, sleep: 0, workout: 0, personal: 0 };
+  let deepFocusMins = 0;
+  let multiMins = 0;
   let totalMins = 0;
-  let deepSingleMins = 0;
-  let multitaskMins = 0;
-  let leakMins = 0;
-  let catMins = { meeting: 0, investment: 0, maintenance: 0, rest: 0, leak: 0, routine: 0, sleep: 0 };
-  let eisMins = { q1: 0, q2: 0, q3: 0, q4: 0 };
 
-  Object.values(entries).forEach(e => {
-    const dur = e.duration || 60;
-    totalMins += dur;
-    const cat = e.category || 'maintenance';
-    const eis = (e.eisenhower || 'q1').toLowerCase();
-
-    if (catMins[cat] !== undefined) catMins[cat] += dur;
-    if (eisMins[eis] !== undefined) eisMins[eis] += dur;
-
-    if (e.isMultitask) multitaskMins += dur;
-    else if (cat !== 'leak' && cat !== 'sleep') deepSingleMins += dur;
-
-    if (cat === 'leak') leakMins += dur;
+  plansForToday.forEach(plan => {
+    if (plan.completedDates && plan.completedDates[currentDateStr]) {
+      const dur = plan.durationMins || 60;
+      totalMins += dur;
+      if (catSums[plan.category] !== undefined) {
+        catSums[plan.category] += dur;
+      }
+      if (plan.isMultitask) {
+        multiMins += dur;
+      } else if (plan.category === 'business' || plan.category === 'office' || plan.category === 'meeting') {
+        deepFocusMins += dur;
+      }
+    }
   });
 
-  document.getElementById('eisenhowerQ1Val').textContent = `${(eisMins.q1 / 60).toFixed(1)}h`;
-  document.getElementById('eisenhowerQ2Val').textContent = `${(eisMins.q2 / 60).toFixed(1)}h`;
-  document.getElementById('eisenhowerQ3Val').textContent = `${(eisMins.q3 / 60).toFixed(1)}h`;
-  document.getElementById('eisenhowerQ4Val').textContent = `${(eisMins.q4 / 60).toFixed(1)}h`;
+  // Gauge values
+  const deepPct = totalMins ? Math.round((deepFocusMins / totalMins) * 100) : 0;
+  const multiPct = totalMins ? Math.round((multiMins / totalMins) * 100) : 0;
 
-  const waking = Math.max(1, totalMins - catMins.sleep);
-  const deepPct = Math.min(100, Math.round((deepSingleMins / waking) * 100));
-  const multiPct = Math.min(100, Math.round((multitaskMins / waking) * 100));
-  const leakPct = Math.min(100, Math.round((leakMins / waking) * 100));
+  const deepVal = document.getElementById('gaugeDeepFocusVal');
+  const deepBar = document.getElementById('gaugeDeepFocusBar');
+  if (deepVal) deepVal.textContent = `${(deepFocusMins / 60).toFixed(1)}h (${deepPct}%)`;
+  if (deepBar) deepBar.style.width = `${deepPct}%`;
 
-  document.getElementById('gaugeDeepFocusVal').textContent = `${(deepSingleMins / 60).toFixed(1)}h (${deepPct}%)`;
-  document.getElementById('gaugeDeepFocusBar').style.width = `${deepPct}%`;
+  const multiVal = document.getElementById('gaugeMultitaskVal');
+  const multiBar = document.getElementById('gaugeMultitaskBar');
+  if (multiVal) multiVal.textContent = `${(multiMins / 60).toFixed(1)}h (${multiPct}%)`;
+  if (multiBar) multiBar.style.width = `${multiPct}%`;
 
-  document.getElementById('gaugeMultitaskVal').textContent = `${(multitaskMins / 60).toFixed(1)}h (${multiPct}%)`;
-  document.getElementById('gaugeMultitaskBar').style.width = `${multiPct}%`;
-
-  document.getElementById('gaugeLeakVal').textContent = `${(leakMins / 60).toFixed(1)}h (${leakPct}%)`;
-  document.getElementById('gaugeLeakBar').style.width = `${leakPct}%`;
-
-  const ctx = document.getElementById('categoryDonutChart');
-  if (ctx) {
+  // Render Donut Chart
+  const chartCanvas = document.getElementById('categoryDonutChart');
+  if (chartCanvas && typeof Chart !== 'undefined') {
     if (donutChartInstance) donutChartInstance.destroy();
-    donutChartInstance = new Chart(ctx, {
+
+    const labels = ['Teams', 'Office', 'Business', 'Sleep', 'Workout', 'Personal'];
+    const dataVals = [
+      catSums.meeting / 60,
+      catSums.office / 60,
+      catSums.business / 60,
+      catSums.sleep / 60,
+      catSums.workout / 60,
+      catSums.personal / 60
+    ];
+
+    donutChartInstance = new Chart(chartCanvas, {
       type: 'doughnut',
       data: {
-        labels: ['Growth', 'Office', 'Teams Meeting', 'Rest', 'Leaks', 'Routine', 'Sleep'],
+        labels: labels,
         datasets: [{
-          data: totalMins === 0 ? [1] : [
-            (catMins.investment / 60).toFixed(1),
-            (catMins.maintenance / 60).toFixed(1),
-            (catMins.meeting / 60).toFixed(1),
-            (catMins.rest / 60).toFixed(1),
-            (catMins.leak / 60).toFixed(1),
-            (catMins.routine / 60).toFixed(1),
-            (catMins.sleep / 60).toFixed(1)
-          ],
-          backgroundColor: totalMins === 0 ? ['#334155'] : ['#10b981', '#3b82f6', '#6366f1', '#8b5cf6', '#f43f5e', '#f59e0b', '#475569'],
-          borderWidth: 2,
-          borderColor: '#070b14'
+          data: dataVals.every(v => v === 0) ? [1, 1, 1, 1, 1, 1] : dataVals,
+          backgroundColor: ['#818cf8', '#60a5fa', '#34d399', '#c084fc', '#fbbf24', '#22d3ee'],
+          borderWidth: 0
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10, weight: 'bold' }, color: '#94a3b8' } }
+          legend: {
+            position: 'bottom',
+            labels: { boxWidth: 10, color: '#94a3b8', font: { size: 10, weight: 'bold' } }
+          }
         },
         cutout: '70%'
       }
@@ -1264,176 +1303,69 @@ function renderStats() {
   }
 }
 
-// --- POPUP MODAL ENGINE ---
-function openEntryModal(startHour, durationMins = 120) {
-  currentEditingHour = startHour;
-  selectedDurationMins = durationMins;
-
-  document.getElementById('modalStartHourSelect').value = startHour;
-
-  let matched = false;
-  document.querySelectorAll('#modalDurBtns .dur-btn').forEach(b => {
-    b.className = 'dur-btn btn-press py-2 rounded-xl bg-surface-800 text-slate-300 text-center font-bold border border-surface-750 transition';
-    if (b.getAttribute('data-mins') == durationMins) {
-      b.className = 'dur-btn btn-press py-2 rounded-xl bg-emerald-500/20 text-emerald-400 text-center font-black border border-emerald-500/40 transition';
-      matched = true;
-    }
-  });
-
-  const customRow = document.getElementById('customDurationRow');
-  if (!matched) {
-    const customBtn = document.querySelector('#modalDurBtns .dur-btn[data-mins="custom"]');
-    if (customBtn) customBtn.className = 'dur-btn btn-press py-2 rounded-xl bg-emerald-500/20 text-emerald-400 text-center font-black border border-emerald-500/40 transition';
-    customRow?.classList.remove('hidden');
-    if (document.getElementById('customHoursInput')) document.getElementById('customHoursInput').value = Math.floor(durationMins / 60);
-    if (document.getElementById('customMinsInput')) document.getElementById('customMinsInput').value = durationMins % 60;
-  } else {
-    customRow?.classList.add('hidden');
-  }
-
-  updateModalSpanSummary();
-
-  const modal = document.getElementById('entryModal');
-  modal?.classList.remove('hidden');
-  modal?.classList.add('flex');
-  if (window.lucide) lucide.createIcons();
-}
-
-function closeEntryModal() {
-  const modal = document.getElementById('entryModal');
-  modal?.classList.add('hidden');
-  modal?.classList.remove('flex');
-  currentEditingPlanId = null;
-}
-
-function populateStartHourDropdown() {
-  const sel = document.getElementById('modalStartHourSelect');
-  if (!sel) return;
-  sel.innerHTML = '';
-  for (let i = 0; i < 24; i++) {
-    const opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = formatHour12(i);
-    sel.appendChild(opt);
-  }
-}
-
-function updateModalSpanSummary() {
-  const startHour = parseInt(document.getElementById('modalStartHourSelect').value, 10);
-  const summary = formatCustomSpan(startHour, selectedDurationMins);
-  document.getElementById('modalSpanSummary').textContent = summary;
-}
-
-function saveModalEntry() {
-  playSfx('check');
-  const day = ensureDayRecord(currentDateStr);
-  const startHour = parseInt(document.getElementById('modalStartHourSelect').value, 10);
-  const title = document.getElementById('modalActivityTitleInput').value.trim() || 'Scheduled Block';
-  const isMulti = document.getElementById('modalMultitaskCheckbox').checked;
-
-  let cat = 'maintenance';
-  let eis = 'q1';
-  const lower = title.toLowerCase();
-  if (lower.includes('teams') || lower.includes('meeting') || lower.includes('sync') || lower.includes('standup') || lower.includes('call')) {
-    cat = 'meeting'; eis = 'q1';
-  } else if (lower.includes('youtube') || lower.includes('ai') || lower.includes('growth') || lower.includes('study')) {
-    cat = 'investment'; eis = 'q2';
-  } else if (lower.includes('sleep') || lower.includes('rest') || lower.includes('function')) {
-    cat = lower.includes('sleep') ? 'sleep' : 'rest'; eis = 'q2';
-  } else if (lower.includes('tea') || lower.includes('meal') || lower.includes('transit') || lower.includes('commute')) {
-    cat = 'routine'; eis = 'q3';
-  } else if (lower.includes('leak') || lower.includes('movie') || lower.includes('scroll')) {
-    cat = 'leak'; eis = 'q4';
-  }
-
-  if (currentEditingPlanId) {
-    const p = day.plans.find(x => x.id === currentEditingPlanId);
-    if (p) {
-      p.startHour = startHour;
-      p.durationMins = selectedDurationMins;
-      p.title = title;
-      p.isMultitask = isMulti;
-      p.category = cat;
-      p.eisenhower = eis;
-      if (p.confirmed) pushPlanToVerifiedEntries(p, currentDateStr);
-    }
-  } else {
-    day.plans.push({
-      id: 'plan_' + Date.now(),
-      startHour: startHour,
-      durationMins: selectedDurationMins,
-      title: title,
-      category: cat,
-      eisenhower: eis,
-      isMultitask: isMulti,
-      confirmed: false
-    });
-  }
-  addXP(15, 'Block Saved');
-
-  saveAppData();
-  closeEntryModal();
-  refreshAllViews();
-}
-
-function deleteCurrentEntry() {
-  playSfx('tap');
-  if (currentEditingPlanId) {
-    deletePlan(currentEditingPlanId);
-  }
-  closeEntryModal();
-  refreshAllViews();
-}
-
-// --- EXPORT & BACKUP ---
+// --- BACKUP & EXPORT ---
 function exportCsvData() {
-  let csv = 'Date,DayType,Hour,Title,Category,Quadrant,Multitask,Duration_Min\n';
-  Object.keys(appData).sort().forEach(date => {
-    const day = appData[date];
-    const entries = day?.entries || {};
-    const dType = day?.dayType || 'workday';
-    Object.keys(entries).sort((a, b) => a - b).forEach(h => {
-      const e = entries[h];
-      csv += `${date},${dType},"${formatHour12(parseInt(h, 10))}",${e.title},${e.category},${e.eisenhower},${e.isMultitask ? 'YES' : 'NO'},${e.duration || 60}\n`;
-    });
+  const rows = [['Date', 'Title', 'Category', 'Start', 'End', 'Duration (mins)', 'Completed', 'Multitask']];
+  (appData.plans || []).forEach(p => {
+    rows.push([
+      p.date || '',
+      `"${p.title.replace(/"/g, '""')}"`,
+      p.category,
+      minsToTimeStr(p.startMins),
+      minsToTimeStr(p.endMins),
+      p.durationMins,
+      Boolean(p.completedDates && p.completedDates[currentDateStr]),
+      Boolean(p.isMultitask)
+    ]);
   });
-  downloadFile(csv, `DayFlow_${currentDateStr}.csv`, 'text/csv');
+
+  const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(e => e.join(',')).join('\n');
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement('a');
+  link.setAttribute('href', encodedUri);
+  link.setAttribute('download', `dayflow_export_${currentDateStr}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 function backupJsonData() {
-  const payload = { version: '4.3', exportDate: new Date().toISOString(), settings: appSettings, data: appData };
-  downloadFile(JSON.stringify(payload, null, 2), `DayFlow_Backup_${currentDateStr}.json`, 'application/json');
+  const payload = {
+    version: '4.3',
+    exportDate: new Date().toISOString(),
+    data: appData,
+    settings: appSettings
+  };
+  const jsonBlob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(jsonBlob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `dayflow_backup_${currentDateStr}.json`;
+  a.click();
+  URL.revokeObjectURL(a);
 }
 
-function importJsonData(event) {
-  const file = event.target.files[0];
+function importJsonData(e) {
+  const file = e.target.files[0];
   if (!file) return;
+
   const reader = new FileReader();
-  reader.onload = (e) => {
+  reader.onload = (event) => {
     try {
-      const parsed = JSON.parse(e.target.result);
-      if (parsed.data) appData = { ...appData, ...parsed.data };
-      if (parsed.settings) appSettings = parsed.settings;
-      saveAppData();
-      saveSettings();
-      playSfx('check');
-      alert('Data restored successfully!');
-      refreshAllViews();
+      const parsed = JSON.parse(event.target.result);
+      if (parsed.data) {
+        appData = parsed.data;
+        if (parsed.settings) appSettings = parsed.settings;
+        saveAppData();
+        saveSettings();
+        refreshAllViews();
+        alert('Backup successfully restored!');
+      } else {
+        alert('Invalid backup file structure.');
+      }
     } catch (err) {
-      alert('Invalid backup: ' + err.message);
+      alert('Error parsing JSON backup file.');
     }
   };
   reader.readAsText(file);
-}
-
-function downloadFile(content, fileName, mimeType) {
-  const blob = new Blob([content], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
 }

@@ -158,51 +158,30 @@
   <!-- MAIN SCROLLABLE VIEWPORT -->
   <main class="flex-1 overflow-y-auto px-4 py-3 max-w-md mx-auto w-full pb-32 space-y-4">
 
-    <!-- SELECTED DAY & 4-PILL MODE BAR -->
-    <div class="bg-surface-900 border border-surface-800 rounded-3xl p-3.5 space-y-2.5 shadow-sm">
-      <div class="flex items-center justify-between">
+    <!-- DATE HEADER & QUICK DAY STEPPER -->
+    <div class="flex items-center justify-between bg-surface-900 border border-surface-800 rounded-3xl px-4 py-3 shadow-sm">
+      <div class="flex items-center gap-3">
+        <button id="prevDayBtn" type="button" class="btn-press p-2 text-slate-400 hover:text-white rounded-xl bg-surface-850 border border-surface-800 transition" title="Previous Day">
+          <i data-lucide="chevron-left" class="w-4 h-4"></i>
+        </button>
         <div>
-          <h2 class="text-base font-black text-white leading-tight" id="selectedDayTitle">Saturday, Oct 3</h2>
-          <span id="isTodayBadge" class="hidden inline-block text-[10px] font-black uppercase text-emerald-400 mt-0.5">● Today</span>
+          <h2 class="text-sm font-black text-white leading-tight" id="selectedDayTitle">Saturday, Oct 3</h2>
+          <span id="isTodayBadge" class="hidden inline-block text-[10px] font-black uppercase text-emerald-400">● Today</span>
         </div>
-        <span id="dayTypeBadge" class="text-xs font-black px-2.5 py-1 rounded-xl bg-surface-800 text-slate-300">Weekend</span>
       </div>
-
-      <!-- 4-Pill Switcher: Big, Tactile, Thumb-Friendly -->
-      <div class="grid grid-cols-4 gap-1.5 bg-surface-950 p-1.5 rounded-2xl border border-surface-800" id="dayTypePillGroup">
-        <button type="button" data-type="workday" class="day-type-pill btn-press text-xs font-black py-2 rounded-xl text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
-          <span>💼</span> Work
+      <div class="flex items-center gap-2">
+        <button id="nextDayBtn" type="button" class="btn-press p-2 text-slate-400 hover:text-white rounded-xl bg-surface-850 border border-surface-800 transition" title="Next Day">
+          <i data-lucide="chevron-right" class="w-4 h-4"></i>
         </button>
-        <button type="button" data-type="weekend" class="day-type-pill btn-press text-xs font-black py-2 rounded-xl text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
-          <span>🌴</span> Wknd
-        </button>
-        <button type="button" data-type="holiday" class="day-type-pill btn-press text-xs font-black py-2 rounded-xl text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
-          <span>🏖️</span> PTO
-        </button>
-        <button type="button" data-type="rest" class="day-type-pill btn-press text-xs font-black py-2 rounded-xl text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
-          <span>🎉</span> Rest
+        <button id="todayJumpBtn" type="button" class="btn-press px-2.5 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-black transition">
+          Today
         </button>
       </div>
-    </div>
-
-    <!-- STREAK SHIELD BANNER (When Holiday or Rest is active) -->
-    <div id="holidayRestBanner" class="hidden rounded-3xl bg-indigo-500/10 border border-indigo-500/30 p-4 space-y-2 animate-in fade-in duration-200">
-      <div class="flex items-center justify-between">
-        <span class="text-sm font-black text-indigo-300 flex items-center gap-2" id="holidayRestTitle">
-          🛡️ Streak Protection Shield Active
-        </span>
-        <span class="text-xs font-black px-2 py-0.5 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-          Protected
-        </span>
-      </div>
-      <p class="text-xs text-slate-300 leading-relaxed" id="holidayRestSubtitle">
-        Enjoy your day off or event with zero guilt! Your habit streaks are frozen and will not break.
-      </p>
     </div>
 
     <!-- ======================================================== -->
-    <!-- VIEW 1: 📅 TODAY (UNIFIED SCHEDULE + FOCUS QUEST)         -->
-    <!-- All daily actions happen right here. No confusion!       -->
+    <!-- VIEW 1: 📅 TODAY (CALENDAR TIMELINE + FOCUS QUEST)        -->
+    <!-- Zoom / Teams Meeting Schedule • Clean & Intuitive        -->
     <!-- ======================================================== -->
     <div id="viewToday" class="space-y-4">
       
@@ -233,67 +212,49 @@
         </div>
       </div>
 
-      <!-- Quick 1-Tap Blueprint Sync -->
-      <div class="rounded-3xl bg-surface-900 border border-surface-800 p-4 space-y-3 shadow-sm">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
-              <i data-lucide="layers" class="w-4 h-4"></i>
-            </div>
-            <div>
-              <h3 class="text-xs font-black text-white" id="blueprintTitle">Workday Blueprint</h3>
-              <p class="text-[11px] text-slate-400" id="blueprintSubtitle">Office 2-6 PM • WFH 7-7:30 PM • 2h YouTube</p>
-            </div>
-          </div>
-          <button type="button" id="applyTodayBlueprintBtn" class="btn-press py-2 px-3 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 text-indigo-300 font-black rounded-xl text-xs flex items-center gap-1.5 transition shadow-glow-indigo">
-            <i data-lucide="zap" class="w-3.5 h-3.5"></i> Fill Day
-          </button>
-        </div>
-
-        <div class="flex items-center justify-between pt-2 border-t border-surface-800/80 text-xs">
-          <span class="text-slate-400">Plan full week without overthinking:</span>
-          <button type="button" id="applyWeekBlueprintBtn" class="btn-press text-emerald-400 hover:text-emerald-300 font-black flex items-center gap-1 transition">
-            <i data-lucide="copy" class="w-3.5 h-3.5"></i> Fill Mon–Fri
-          </button>
-        </div>
-      </div>
-
-      <!-- Quick 1-Tap Chips -->
+      <!-- Quick Activity Chips (Clean, No Hardcoded Timings) -->
       <div class="space-y-1.5">
         <div class="flex items-center justify-between px-1">
-          <span class="text-xs font-black uppercase text-slate-400 tracking-wider">Quick Blocks</span>
+          <span class="text-xs font-black uppercase text-slate-400 tracking-wider">Quick Plan</span>
           <button id="openPlanModalBtn" type="button" class="btn-press text-xs font-black text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
-            <i data-lucide="plus-circle" class="w-4 h-4"></i> Custom
+            <i data-lucide="plus-circle" class="w-4 h-4"></i> New Plan
           </button>
         </div>
 
         <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-          <button type="button" data-tpl="teams" class="plan-tpl-btn btn-press shrink-0 px-3 py-2 rounded-2xl bg-surface-850 hover:bg-surface-800 border border-indigo-500/30 text-indigo-300 text-xs font-bold transition flex items-center gap-2">
-            <span>👥</span> Teams Meeting (45m)
+          <button type="button" data-activity="Teams Meeting" data-cat="meeting" class="quick-chip-btn btn-press shrink-0 px-3 py-2 rounded-2xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-xs font-bold transition flex items-center gap-1.5">
+            <span>👥</span> Teams Meeting
           </button>
-          <button type="button" data-tpl="office" class="plan-tpl-btn btn-press shrink-0 px-3 py-2 rounded-2xl bg-surface-850 hover:bg-surface-800 border border-blue-500/30 text-blue-300 text-xs font-bold transition flex items-center gap-2">
-            <span>💼</span> 2-6 PM Office
+          <button type="button" data-activity="Office" data-cat="office" class="quick-chip-btn btn-press shrink-0 px-3 py-2 rounded-2xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-300 text-xs font-bold transition flex items-center gap-1.5">
+            <span>💼</span> Office
           </button>
-          <button type="button" data-tpl="yt" class="plan-tpl-btn btn-press shrink-0 px-3 py-2 rounded-2xl bg-surface-850 hover:bg-surface-800 border border-emerald-500/30 text-emerald-300 text-xs font-bold transition flex items-center gap-2">
-            <span>📈</span> 2h YouTube Focus
+          <button type="button" data-activity="Business" data-cat="business" class="quick-chip-btn btn-press shrink-0 px-3 py-2 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-bold transition flex items-center gap-1.5">
+            <span>📈</span> Business
           </button>
-          <button type="button" data-tpl="wfh" class="plan-tpl-btn btn-press shrink-0 px-3 py-2 rounded-2xl bg-surface-850 hover:bg-surface-800 border border-purple-500/30 text-purple-300 text-xs font-bold transition flex items-center gap-2">
-            <span>💻</span> 7-7:30 PM WFH
+          <button type="button" data-activity="Sleep" data-cat="sleep" class="quick-chip-btn btn-press shrink-0 px-3 py-2 rounded-2xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-300 text-xs font-bold transition flex items-center gap-1.5">
+            <span>😴</span> Sleep
           </button>
-          <button type="button" data-tpl="sleep" class="plan-tpl-btn btn-press shrink-0 px-3 py-2 rounded-2xl bg-surface-850 hover:bg-surface-800 border border-indigo-500/30 text-indigo-300 text-xs font-bold transition flex items-center gap-2">
-            <span>😴</span> 11 PM Sleep (8h)
+          <button type="button" data-activity="Workout" data-cat="workout" class="quick-chip-btn btn-press shrink-0 px-3 py-2 rounded-2xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-bold transition flex items-center gap-1.5">
+            <span>🏋️</span> Workout
+          </button>
+          <button type="button" data-activity="Personal" data-cat="personal" class="quick-chip-btn btn-press shrink-0 px-3 py-2 rounded-2xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-xs font-bold transition flex items-center gap-1.5">
+            <span>☕</span> Personal
           </button>
         </div>
       </div>
 
-      <!-- Unified Schedule Flow (Checkmark directly verifies into audit!) -->
+      <!-- Calendar Meeting Timeline (Zoom / Teams Style) -->
       <div class="space-y-2">
         <div class="flex items-center justify-between text-xs text-slate-400 font-bold px-1">
-          <span>Today's Flow (Schedule & Audit)</span>
+          <span class="flex items-center gap-1.5">
+            <i data-lucide="calendar" class="w-3.5 h-3.5 text-indigo-400"></i> Daily Schedule (Zoom / Teams Style)
+          </span>
           <span id="planTotalHoursBadge" class="text-emerald-400 font-black">0.0h logged</span>
         </div>
-        <div id="plannerListContainer" class="space-y-3">
-          <!-- Rendered dynamically in app.js with 1-tap [✓] completion -->
+
+        <!-- The Vertical Timeline of Hours & Meeting Cards -->
+        <div id="plannerTimelineContainer" class="space-y-2.5">
+          <!-- Rendered dynamically in app.js -->
         </div>
       </div>
     </div>
@@ -506,162 +467,151 @@
     </div>
   </nav>
 
-  <!-- ONE-HANDED BOTTOM SHEET MODAL -->
-  <div id="entryModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-end justify-center p-0 sm:p-4">
-    <div class="bg-surface-900 w-full max-w-md rounded-t-[32px] sm:rounded-3xl border border-surface-800 shadow-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-200">
+  <!-- SMALL CENTERED POP-UP MODAL (Clean, Game-Like, Middle of Screen) -->
+  <div id="entryModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="bg-surface-900 w-full max-w-sm rounded-[28px] border border-surface-750 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[92vh]">
       
       <!-- Modal Header -->
-      <div class="px-6 py-4 border-b border-surface-800 flex items-center justify-between bg-surface-850">
-        <div>
-          <h3 class="text-base font-black text-white" id="modalTitle">Schedule Block</h3>
-          <p class="text-xs text-slate-400 font-semibold mt-0.5" id="modalSpanSummary">02:00 PM - 06:00 PM (4h)</p>
+      <div class="px-5 py-3.5 border-b border-surface-800 flex items-center justify-between bg-surface-850">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+          <h3 class="text-sm font-black text-white" id="modalTitle">Schedule Plan</h3>
         </div>
-        <button id="closeEntryModalBtn" type="button" class="btn-press p-2 text-slate-400 hover:text-white rounded-xl transition">
-          <i data-lucide="x" class="w-6 h-6"></i>
+        <button id="closeEntryModalBtn" type="button" class="btn-press p-1.5 text-slate-400 hover:text-white rounded-xl bg-surface-800 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
       <!-- Modal Body -->
-      <div class="p-6 overflow-y-auto space-y-4 text-xs">
+      <div class="p-5 overflow-y-auto space-y-3.5 text-xs">
         
-        <!-- Start Time -->
-        <div class="flex items-center justify-between bg-surface-850 p-3.5 rounded-2xl border border-surface-800">
-          <span class="text-slate-200 font-bold text-xs flex items-center gap-2">
-            <i data-lucide="clock" class="w-4 h-4 text-emerald-400"></i> Start Time:
-          </span>
-          <select id="modalStartHourSelect" class="bg-surface-800 border border-surface-700 text-white rounded-xl px-3 py-1.5 font-black text-xs focus:outline-none">
-            <!-- Populated in JS -->
-          </select>
+        <!-- 1-Tap Quick Activity Chips (Clean, No Hardcoded Times) -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-black uppercase text-slate-400 tracking-wider">Activity</label>
+          <div class="grid grid-cols-3 gap-2" id="modalPresetChips">
+            <button type="button" data-name="Teams Meeting" data-cat="meeting" class="modal-preset-chip btn-press p-2 rounded-xl bg-surface-850 hover:bg-indigo-500/20 border border-surface-750 text-indigo-300 font-bold text-xs text-center transition flex flex-col items-center gap-1">
+              <span class="text-base">👥</span>
+              <span class="text-[10px] leading-tight">Teams</span>
+            </button>
+            <button type="button" data-name="Office" data-cat="office" class="modal-preset-chip btn-press p-2 rounded-xl bg-surface-850 hover:bg-blue-500/20 border border-surface-750 text-blue-300 font-bold text-xs text-center transition flex flex-col items-center gap-1">
+              <span class="text-base">💼</span>
+              <span class="text-[10px] leading-tight">Office</span>
+            </button>
+            <button type="button" data-name="Business" data-cat="business" class="modal-preset-chip btn-press p-2 rounded-xl bg-surface-850 hover:bg-emerald-500/20 border border-surface-750 text-emerald-300 font-bold text-xs text-center transition flex flex-col items-center gap-1">
+              <span class="text-base">📈</span>
+              <span class="text-[10px] leading-tight">Business</span>
+            </button>
+            <button type="button" data-name="Sleep" data-cat="sleep" class="modal-preset-chip btn-press p-2 rounded-xl bg-surface-850 hover:bg-purple-500/20 border border-surface-750 text-purple-300 font-bold text-xs text-center transition flex flex-col items-center gap-1">
+              <span class="text-base">😴</span>
+              <span class="text-[10px] leading-tight">Sleep</span>
+            </button>
+            <button type="button" data-name="Workout" data-cat="workout" class="modal-preset-chip btn-press p-2 rounded-xl bg-surface-850 hover:bg-amber-500/20 border border-surface-750 text-amber-300 font-bold text-xs text-center transition flex flex-col items-center gap-1">
+              <span class="text-base">🏋️</span>
+              <span class="text-[10px] leading-tight">Workout</span>
+            </button>
+            <button type="button" data-name="Personal" data-cat="personal" class="modal-preset-chip btn-press p-2 rounded-xl bg-surface-850 hover:bg-cyan-500/20 border border-surface-750 text-cyan-300 font-bold text-xs text-center transition flex flex-col items-center gap-1">
+              <span class="text-base">☕</span>
+              <span class="text-[10px] leading-tight">Personal</span>
+            </button>
+          </div>
         </div>
 
-        <!-- Duration Selector -->
-        <div class="bg-surface-850 p-3.5 rounded-2xl border border-surface-800 space-y-2.5">
-          <span class="text-xs font-black text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-            <i data-lucide="timer" class="w-3.5 h-3.5 text-cyan-400"></i> Duration
-          </span>
-          <div class="grid grid-cols-4 gap-2" id="modalDurBtns">
-            <button type="button" data-mins="30" class="dur-btn btn-press py-2 rounded-xl bg-surface-800 text-slate-300 text-center font-bold border border-surface-750 transition">30m</button>
-            <button type="button" data-mins="45" class="dur-btn btn-press py-2 rounded-xl bg-surface-800 text-indigo-300 text-center font-bold border border-indigo-500/30 transition">45m</button>
-            <button type="button" data-mins="60" class="dur-btn btn-press py-2 rounded-xl bg-surface-800 text-slate-300 text-center font-bold border border-surface-750 transition">1h</button>
-            <button type="button" data-mins="120" class="dur-btn btn-press py-2 rounded-xl bg-surface-800 text-slate-300 text-center font-bold border border-surface-750 transition">2h</button>
-            <button type="button" data-mins="240" class="dur-btn btn-press py-2 rounded-xl bg-emerald-500/20 text-emerald-400 text-center font-black border border-emerald-500/40 transition">4 Hours</button>
-            <button type="button" data-mins="420" class="dur-btn btn-press py-2 rounded-xl bg-surface-800 text-indigo-300 text-center font-bold border border-indigo-500/30 transition">7h Sleep</button>
-            <button type="button" data-mins="480" class="dur-btn btn-press py-2 rounded-xl bg-surface-800 text-indigo-300 text-center font-bold border border-indigo-500/30 transition">8h Sleep</button>
-            <button type="button" data-mins="custom" class="dur-btn btn-press py-2 rounded-xl bg-surface-800 text-slate-300 text-center font-bold border border-surface-750 transition">Custom</button>
+        <!-- Activity Name Input -->
+        <div>
+          <input type="text" id="modalActivityTitleInput" placeholder="Activity Name (e.g. Office, Workout)" class="w-full bg-surface-850 border border-surface-800 rounded-2xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-xs font-bold">
+        </div>
+
+        <!-- TIME SETUP: Start Time & End Time -->
+        <div class="bg-surface-850 p-3.5 rounded-2xl border border-surface-800 space-y-3">
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-bold text-slate-300 flex items-center gap-1.5">
+              <i data-lucide="clock" class="w-3.5 h-3.5 text-cyan-400"></i> Time Setup
+            </span>
+            <span id="modalDurationBadge" class="font-black text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-lg text-[11px]">
+              1h 00m
+            </span>
           </div>
 
-          <div id="customDurationRow" class="hidden pt-2 flex items-center justify-between border-t border-surface-800">
-            <span class="text-xs font-bold text-slate-400">Custom Duration:</span>
-            <div class="flex items-center gap-2">
-              <div class="flex items-center gap-1">
-                <input type="number" id="customHoursInput" min="0" max="24" value="4" class="w-16 bg-surface-800 border border-surface-700 rounded-xl px-2 py-1.5 text-right text-emerald-400 font-black text-xs focus:outline-none">
-                <span class="text-slate-400 font-bold text-xs">hrs</span>
-              </div>
-              <div class="flex items-center gap-1">
-                <input type="number" id="customMinsInput" min="0" max="45" step="15" value="0" class="w-16 bg-surface-800 border border-surface-700 rounded-xl px-2 py-1.5 text-right text-emerald-400 font-black text-xs focus:outline-none">
-                <span class="text-slate-400 font-bold text-xs">min</span>
-              </div>
+          <div class="grid grid-cols-2 gap-2.5">
+            <div>
+              <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Start Time</label>
+              <select id="modalStartHourSelect" class="w-full bg-surface-800 border border-surface-700 text-white rounded-xl px-2.5 py-2 font-black text-xs focus:outline-none">
+                <!-- Populated in JS -->
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">End Time</label>
+              <select id="modalEndHourSelect" class="w-full bg-surface-800 border border-surface-700 text-white rounded-xl px-2.5 py-2 font-black text-xs focus:outline-none">
+                <!-- Populated in JS -->
+              </select>
+            </div>
+          </div>
+
+          <!-- Tactile Game-like Extend / Adjust Buttons -->
+          <div class="pt-1 space-y-1.5">
+            <div class="flex items-center justify-between text-[10px] font-bold text-slate-400">
+              <span>Quick Adjust (Extend Time):</span>
+            </div>
+            <div class="grid grid-cols-5 gap-1.5" id="modalExtendBtnsGroup">
+              <button type="button" data-delta="-15" class="extend-btn btn-press py-1.5 rounded-xl bg-surface-800 hover:bg-surface-750 text-slate-300 text-center font-black border border-surface-700 text-xs">-15m</button>
+              <button type="button" data-delta="15" class="extend-btn btn-press py-1.5 rounded-xl bg-surface-800 hover:bg-surface-750 text-indigo-300 text-center font-black border border-indigo-500/30 text-xs">+15m</button>
+              <button type="button" data-delta="30" class="extend-btn btn-press py-1.5 rounded-xl bg-surface-800 hover:bg-surface-750 text-cyan-300 text-center font-black border border-cyan-500/30 text-xs">+30m</button>
+              <button type="button" data-delta="60" class="extend-btn btn-press py-1.5 rounded-xl bg-surface-800 hover:bg-surface-750 text-emerald-300 text-center font-black border border-emerald-500/30 text-xs">+1h</button>
+              <button type="button" data-delta="120" class="extend-btn btn-press py-1.5 rounded-xl bg-surface-800 hover:bg-surface-750 text-amber-300 text-center font-black border border-amber-500/30 text-xs">+2h</button>
             </div>
           </div>
         </div>
 
-        <!-- Activity Presets -->
-        <div class="space-y-2">
-          <span class="text-xs font-black text-slate-400 uppercase tracking-wider">Select Activity</span>
-          <div class="grid grid-cols-2 gap-2.5" id="modalPresetGrid">
-            
-            <button type="button" data-preset="Teams Meeting / Client Sync" data-cat="meeting" data-eis="q1" data-dur="45" class="preset-tile btn-press p-3 rounded-2xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-left transition flex items-center gap-3">
-              <span class="text-xl">👥</span>
-              <div>
-                <p class="font-bold text-indigo-300 text-xs">Teams Meeting</p>
-                <p class="text-[11px] text-indigo-400/80">Sync / Standup</p>
-              </div>
-            </button>
+        <!-- REPEAT / SCHEDULE FREQUENCY -->
+        <div class="bg-surface-850 p-3.5 rounded-2xl border border-surface-800 space-y-2.5">
+          <label class="text-[11px] font-black uppercase text-slate-400 tracking-wider flex items-center justify-between">
+            <span>Schedule For</span>
+            <span class="text-slate-500 text-[10px] lowercase font-normal">recurring or one-time</span>
+          </label>
+          
+          <select id="modalRepeatSelect" class="w-full bg-surface-800 border border-surface-700 text-white rounded-xl px-3 py-2 font-bold text-xs focus:outline-none">
+            <option value="today">📅 Today Only</option>
+            <option value="daily">🔁 Every Day</option>
+            <option value="weekdays">💼 Weekdays (Mon - Fri)</option>
+            <option value="weekends">🌴 Weekends (Sat - Sun)</option>
+            <option value="custom">⚙️ Custom Days (e.g. Mon, Wed, Fri)</option>
+          </select>
 
-            <button type="button" data-preset="Office Work (Core Duties)" data-cat="maintenance" data-eis="q1" data-dur="240" class="preset-tile btn-press p-3 rounded-2xl bg-surface-850 hover:bg-surface-800 border border-blue-500/30 text-left transition flex items-center gap-3">
-              <span class="text-xl">💼</span>
-              <div>
-                <p class="font-bold text-white text-xs">Office Work</p>
-                <p class="text-[11px] text-slate-400">Day Job Shift</p>
-              </div>
-            </button>
-
-            <button type="button" data-preset="Office Work + Background Movie" data-cat="maintenance" data-eis="q1" data-multi="true" data-dist="Movie on personal PC" class="preset-tile btn-press p-3 rounded-2xl bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/30 text-left transition flex items-center gap-3">
-              <span class="text-xl">⚠️</span>
-              <div>
-                <p class="font-bold text-amber-300 text-xs">Work + Movie</p>
-                <p class="text-[11px] text-amber-400/80">Multitask Leak</p>
-              </div>
-            </button>
-
-            <button type="button" data-preset="YouTube Finance Automation" data-cat="investment" data-eis="q2" data-dur="120" class="preset-tile btn-press p-3 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/30 text-left transition flex items-center gap-3">
-              <span class="text-xl">📈</span>
-              <div>
-                <p class="font-bold text-emerald-300 text-xs">YouTube / AI</p>
-                <p class="text-[11px] text-emerald-400/80">Q2 Focus Quest</p>
-              </div>
-            </button>
-
-            <button type="button" data-preset="Night Sleep & Recovery" data-cat="sleep" data-eis="q2" data-dur="480" class="preset-tile btn-press p-3 rounded-2xl bg-indigo-500/10 hover:bg-indigo-500/15 border border-indigo-500/30 text-left transition flex items-center gap-3">
-              <span class="text-xl">😴</span>
-              <div>
-                <p class="font-bold text-indigo-300 text-xs">Night Sleep</p>
-                <p class="text-[11px] text-indigo-400/80">8h Full Recharge</p>
-              </div>
-            </button>
-
-            <button type="button" data-preset="Meal / Tea Break Refresh" data-cat="routine" data-eis="q3" data-dur="30" class="preset-tile btn-press p-3 rounded-2xl bg-surface-850 hover:bg-surface-800 border border-surface-700 text-left transition flex items-center gap-3">
-              <span class="text-xl">☕</span>
-              <div>
-                <p class="font-bold text-slate-200 text-xs">Tea / Meal</p>
-                <p class="text-[11px] text-slate-400">Recharge</p>
-              </div>
-            </button>
-
-            <button type="button" data-preset="Family Call / Real Talk" data-cat="rest" data-eis="q2" data-dur="60" class="preset-tile btn-press p-3 rounded-2xl bg-purple-500/10 hover:bg-purple-500/15 border border-purple-500/30 text-left transition flex items-center gap-3">
-              <span class="text-xl">🗣️</span>
-              <div>
-                <p class="font-bold text-purple-300 text-xs">Family Talk</p>
-                <p class="text-[11px] text-purple-400/80">Mother / Friends</p>
-              </div>
-            </button>
-
-            <button type="button" data-preset="Family Function / Full Rest" data-cat="rest" data-eis="q2" data-dur="240" class="preset-tile btn-press p-3 rounded-2xl bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/30 text-left transition flex items-center gap-3">
-              <span class="text-xl">🎉</span>
-              <div>
-                <p class="font-bold text-pink-300 text-xs">Function / Event</p>
-                <p class="text-[11px] text-pink-400/80">Gathering / Trip</p>
-              </div>
-            </button>
-
+          <!-- Custom Days Row (Only shown when custom is selected) -->
+          <div id="modalCustomDaysRow" class="hidden pt-1">
+            <span class="block text-[10px] text-slate-400 font-bold mb-1.5">Select Active Days:</span>
+            <div class="grid grid-cols-7 gap-1" id="modalDayPillGroup">
+              <button type="button" data-day="1" class="day-select-pill btn-press py-1.5 rounded-xl bg-surface-800 border border-surface-700 text-slate-300 text-xs font-black text-center">M</button>
+              <button type="button" data-day="2" class="day-select-pill btn-press py-1.5 rounded-xl bg-surface-800 border border-surface-700 text-slate-300 text-xs font-black text-center">T</button>
+              <button type="button" data-day="3" class="day-select-pill btn-press py-1.5 rounded-xl bg-surface-800 border border-surface-700 text-slate-300 text-xs font-black text-center">W</button>
+              <button type="button" data-day="4" class="day-select-pill btn-press py-1.5 rounded-xl bg-surface-800 border border-surface-700 text-slate-300 text-xs font-black text-center">T</button>
+              <button type="button" data-day="5" class="day-select-pill btn-press py-1.5 rounded-xl bg-surface-800 border border-surface-700 text-slate-300 text-xs font-black text-center">F</button>
+              <button type="button" data-day="6" class="day-select-pill btn-press py-1.5 rounded-xl bg-surface-800 border border-surface-700 text-slate-300 text-xs font-black text-center">S</button>
+              <button type="button" data-day="0" class="day-select-pill btn-press py-1.5 rounded-xl bg-surface-800 border border-surface-700 text-slate-300 text-xs font-black text-center">S</button>
+            </div>
           </div>
         </div>
 
-        <!-- Custom Title Input -->
-        <div>
-          <input type="text" id="modalActivityTitleInput" placeholder="Activity Title (or select preset above)" class="w-full bg-surface-850 border border-surface-800 rounded-2xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-xs font-bold">
-        </div>
-
         <!-- Multitask Switch -->
-        <div class="bg-surface-850 p-3.5 rounded-2xl border border-surface-800 flex items-center justify-between">
-          <span class="font-bold text-slate-200 text-xs flex items-center gap-2">
-            <i data-lucide="split" class="w-4 h-4 text-amber-400"></i> Multitasking (Movie / Social Media)
+        <div class="bg-surface-850 p-3 rounded-2xl border border-surface-800 flex items-center justify-between">
+          <span class="font-bold text-slate-300 text-xs flex items-center gap-1.5">
+            <i data-lucide="split" class="w-3.5 h-3.5 text-amber-400"></i> Multitasking (Movie/Distraction)
           </span>
           <label class="relative inline-flex items-center cursor-pointer">
             <input type="checkbox" id="modalMultitaskCheckbox" class="sr-only peer">
-            <div class="w-10 h-6 bg-surface-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+            <div class="w-9 h-5 bg-surface-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
           </label>
         </div>
 
       </div>
 
       <!-- Modal Footer -->
-      <div class="p-4 border-t border-surface-800 bg-surface-850 flex items-center justify-between gap-3">
-        <button id="modalDeleteBtn" type="button" class="btn-press py-3 px-4 bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 rounded-2xl text-xs font-black transition border border-rose-500/25">
+      <div class="p-3.5 border-t border-surface-800 bg-surface-850 flex items-center justify-between gap-2.5">
+        <button id="modalDeleteBtn" type="button" class="btn-press py-2.5 px-4 bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 rounded-2xl text-xs font-black transition border border-rose-500/25 hidden">
           Delete
         </button>
-        <button id="modalSaveBtn" type="button" class="btn-press flex-1 py-3 px-4 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-surface-950 rounded-2xl text-xs font-black transition shadow-glow-emerald">
-          Save Block
+        <button id="modalSaveBtn" type="button" class="btn-press flex-1 py-2.5 px-4 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-surface-950 rounded-2xl text-xs font-black transition shadow-glow-emerald">
+          Save Plan
         </button>
       </div>
 
