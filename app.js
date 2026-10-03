@@ -17,11 +17,9 @@ const CATEGORY_META = {
 };
 
 const DEFAULT_HABITS = [
-  { id: 'h1', title: 'Zero distractions during office focus', category: 'focus', icon: '🛡️', color: '#10b981' },
-  { id: 'h2', title: 'Business growth sprint', category: 'growth', icon: '📈', color: '#06b6d4' },
-  { id: 'h3', title: 'Real conversation with mother / friends', category: 'social', icon: '🗣️', color: '#8b5cf6' },
-  { id: 'h4', title: 'Physical workout & tea refresh', category: 'health', icon: '☕', color: '#f59e0b' },
-  { id: 'h5', title: 'Check prices & data directly with eyes', category: 'discipline', icon: '👁️', color: '#ec4899' }
+  { id: 'h_water', title: 'Drink 2L Water', category: 'health', icon: '💧', color: '#06b6d4' },
+  { id: 'h_workout', title: 'Daily Workout', category: 'health', icon: '🏋️', color: '#10b981' },
+  { id: 'h_reading', title: 'Reading & Learning', category: 'learning', icon: '📖', color: '#8b5cf6' }
 ];
 
 const LEVEL_TIERS = [
@@ -106,6 +104,8 @@ let currentDateStr = getTodayDateStr();
 let appData = loadAppData();
 let appSettings = loadSettings();
 let currentEditingPlanId = null;
+let currentEditingHabitId = null;
+let habitSelectedEmoji = '💧';
 let modalActiveCategory = 'office';
 let modalSelectedDays = [1, 3, 5];
 let donutChartInstance = null;
@@ -344,13 +344,21 @@ function saveAppData() {
 function loadSettings() {
   try {
     const raw = localStorage.getItem(SETTINGS_KEY);
-    return raw ? JSON.parse(raw) : {
+    const s = raw ? JSON.parse(raw) : null;
+    if (s && s.habits) {
+      if (s.habits.some(h => h.title && (h.title.includes('Zero distractions') || h.title.includes('mother / friends')))) {
+        s.habits = JSON.parse(JSON.stringify(DEFAULT_HABITS));
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+      }
+      return s;
+    }
+    return {
       player: { xp: 850, soundEnabled: true },
-      habits: DEFAULT_HABITS,
+      habits: JSON.parse(JSON.stringify(DEFAULT_HABITS)),
       dailyGoalHours: 5.0
     };
   } catch (e) {
-    return { player: { xp: 850, soundEnabled: true }, habits: DEFAULT_HABITS, dailyGoalHours: 5.0 };
+    return { player: { xp: 850, soundEnabled: true }, habits: JSON.parse(JSON.stringify(DEFAULT_HABITS)), dailyGoalHours: 5.0 };
   }
 }
 
@@ -572,6 +580,101 @@ function deleteModalPlan() {
   }
 }
 
+// --- HABIT MODAL CONTROLLER ---
+function openHabitModal(habitId = null) {
+  playSfx('tap');
+  currentEditingHabitId = habitId;
+
+  const modal = document.getElementById('habitModal');
+  const modalTitle = document.getElementById('habitModalTitle');
+  const titleInput = document.getElementById('habitTitleInput');
+  const catSelect = document.getElementById('habitCategorySelect');
+  const deleteBtn = document.getElementById('habitDeleteBtn');
+  const preview = document.getElementById('habitSelectedEmojiPreview');
+
+  if (habitId) {
+    const habit = (appSettings.habits || []).find(h => h.id === habitId);
+    if (!habit) return;
+
+    modalTitle.textContent = 'Edit Habit';
+    titleInput.value = habit.title;
+    catSelect.value = habit.category || 'health';
+    habitSelectedEmoji = habit.icon || '💧';
+    deleteBtn.classList.remove('hidden');
+  } else {
+    modalTitle.textContent = 'New Habit';
+    titleInput.value = '';
+    catSelect.value = 'health';
+    habitSelectedEmoji = '💧';
+    deleteBtn.classList.add('hidden');
+  }
+
+  if (preview) preview.textContent = habitSelectedEmoji;
+
+  // Highlight selected emoji in grid
+  document.querySelectorAll('#habitEmojiGrid .habit-emoji-btn').forEach(btn => {
+    if (btn.getAttribute('data-emoji') === habitSelectedEmoji) {
+      btn.classList.add('border-emerald-500', 'bg-emerald-500/20');
+    } else {
+      btn.classList.remove('border-emerald-500', 'bg-emerald-500/20');
+    }
+  });
+
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+}
+
+function closeHabitModal() {
+  playSfx('tap');
+  const modal = document.getElementById('habitModal');
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+  currentEditingHabitId = null;
+}
+
+function saveHabitModal() {
+  const titleInput = document.getElementById('habitTitleInput');
+  const catSelect = document.getElementById('habitCategorySelect');
+
+  const title = titleInput.value.trim() || 'Daily Habit';
+  const category = catSelect.value || 'health';
+
+  if (!appSettings.habits) appSettings.habits = [];
+
+  if (currentEditingHabitId) {
+    const habit = appSettings.habits.find(h => h.id === currentEditingHabitId);
+    if (habit) {
+      habit.title = title;
+      habit.icon = habitSelectedEmoji;
+      habit.category = category;
+    }
+  } else {
+    const newHabit = {
+      id: 'h_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+      title: title,
+      icon: habitSelectedEmoji,
+      category: category,
+      color: '#10b981'
+    };
+    appSettings.habits.push(newHabit);
+  }
+
+  saveSettings();
+  playSfx('check');
+  closeHabitModal();
+  renderHabitGrids();
+}
+
+function deleteHabit(habitId) {
+  if (confirm('Delete this habit?')) {
+    appSettings.habits = (appSettings.habits || []).filter(h => h.id !== habitId);
+    saveSettings();
+    playSfx('tap');
+    closeHabitModal();
+    renderHabitGrids();
+  }
+}
+
 // --- SETUP EVENT LISTENERS ---
 function setupEventListeners() {
   // Navigation Tabs
@@ -737,6 +840,28 @@ function setupEventListeners() {
   // Modal Save & Delete
   document.getElementById('modalSaveBtn')?.addEventListener('click', saveModalPlan);
   document.getElementById('modalDeleteBtn')?.addEventListener('click', deleteModalPlan);
+
+  // Habit Modal Listeners
+  document.getElementById('addNewHabitBtn')?.addEventListener('click', () => openHabitModal(null));
+  document.getElementById('closeHabitModalBtn')?.addEventListener('click', closeHabitModal);
+  document.getElementById('habitSaveBtn')?.addEventListener('click', saveHabitModal);
+  document.getElementById('habitDeleteBtn')?.addEventListener('click', () => {
+    if (currentEditingHabitId) deleteHabit(currentEditingHabitId);
+  });
+
+  document.querySelectorAll('#habitEmojiGrid .habit-emoji-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      playSfx('tap');
+      habitSelectedEmoji = btn.getAttribute('data-emoji') || '💧';
+      const preview = document.getElementById('habitSelectedEmojiPreview');
+      if (preview) preview.textContent = habitSelectedEmoji;
+
+      document.querySelectorAll('#habitEmojiGrid .habit-emoji-btn').forEach(b => {
+        b.classList.remove('border-emerald-500', 'bg-emerald-500/20');
+      });
+      btn.classList.add('border-emerald-500', 'bg-emerald-500/20');
+    });
+  });
 
   // Backup & Reset in Settings
   document.getElementById('exportCsvBtn')?.addEventListener('click', exportCsvData);
@@ -1139,14 +1264,26 @@ function renderHabitGrids() {
   if (!container) return;
   container.innerHTML = '';
 
-  const habits = appSettings.habits || DEFAULT_HABITS;
+  const habits = appSettings.habits || [];
   if (!appData[currentDateStr]) appData[currentDateStr] = { habits: [] };
   if (!appData[currentDateStr].habits) appData[currentDateStr].habits = habits.map(h => ({ id: h.id, completed: false }));
 
   const todayHabits = appData[currentDateStr].habits;
-  let doneCount = todayHabits.filter(h => h.completed).length;
+  let doneCount = habits.filter(h => todayHabits.find(th => th.id === h.id)?.completed).length;
 
   if (counter) counter.textContent = `${doneCount} / ${habits.length} Today`;
+
+  if (habits.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-10 text-slate-400 text-xs bg-surface-900 rounded-3xl border border-dashed border-surface-800 p-6 space-y-2">
+        <span class="text-3xl">✨</span>
+        <p class="font-bold text-white text-sm">No custom habits yet.</p>
+        <p class="text-xs text-slate-400">Tap "+ New Habit" above to create habits that match your real daily life!</p>
+      </div>
+    `;
+    if (window.lucide) lucide.createIcons();
+    return;
+  }
 
   habits.forEach(habit => {
     const isDoneToday = Boolean(todayHabits.find(h => h.id === habit.id)?.completed);
@@ -1186,38 +1323,58 @@ function renderHabitGrids() {
     card.innerHTML = `
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2.5">
-          <span class="text-xl">${habit.icon}</span>
+          <span class="text-xl">${habit.icon || '💧'}</span>
           <div>
             <h4 class="text-xs font-bold text-white">${habit.title}</h4>
             <span class="text-[11px] text-slate-400">🔥 ${streak} day momentum</span>
           </div>
         </div>
-        <button type="button" class="habit-check-btn btn-press w-7 h-7 rounded-xl border flex items-center justify-center transition-all ${
-          isDoneToday 
-            ? 'bg-emerald-500 border-emerald-500 text-surface-950 shadow-glow-emerald' 
-            : 'border-slate-600 bg-surface-850 hover:border-emerald-400 text-transparent'
-        }">
-          <i data-lucide="check" class="w-4 h-4 stroke-[3]"></i>
-        </button>
+        <div class="flex items-center gap-1.5">
+          <button type="button" class="habit-edit-btn btn-press p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-surface-800 transition" title="Edit Habit">
+            <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+          </button>
+          <button type="button" class="habit-delete-btn btn-press p-1.5 text-slate-500 hover:text-rose-400 rounded-lg hover:bg-surface-800 transition" title="Delete Habit">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          </button>
+          <button type="button" class="habit-check-btn btn-press w-7 h-7 rounded-xl border flex items-center justify-center transition-all ${
+            isDoneToday 
+              ? 'bg-emerald-500 border-emerald-500 text-surface-950 shadow-glow-emerald' 
+              : 'border-slate-600 bg-surface-850 hover:border-emerald-400 text-transparent'
+          }">
+            <i data-lucide="check" class="w-4 h-4 stroke-[3]"></i>
+          </button>
+        </div>
       </div>
       ${gridHtml}
     `;
 
+    // 1-Tap Toggle completion
     card.querySelector('.habit-check-btn').addEventListener('click', () => {
-      const hRecord = todayHabits.find(h => h.id === habit.id);
+      let hRecord = todayHabits.find(h => h.id === habit.id);
       if (hRecord) {
         hRecord.completed = !hRecord.completed;
       } else {
-        todayHabits.push({ id: habit.id, completed: true });
+        hRecord = { id: habit.id, completed: true };
+        todayHabits.push(hRecord);
       }
       saveAppData();
-      if (!isDoneToday) {
+      if (hRecord.completed) {
         playSfx('check');
         addXP(15);
       } else {
         playSfx('tap');
       }
       renderHabitGrids();
+    });
+
+    // Edit button
+    card.querySelector('.habit-edit-btn').addEventListener('click', () => {
+      openHabitModal(habit.id);
+    });
+
+    // Delete button
+    card.querySelector('.habit-delete-btn').addEventListener('click', () => {
+      deleteHabit(habit.id);
     });
 
     container.appendChild(card);

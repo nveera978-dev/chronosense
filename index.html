@@ -268,11 +268,16 @@
           <h2 class="text-base font-black text-white">Habit Streaks</h2>
           <p class="text-xs text-slate-400">28-day visual momentum matrices.</p>
         </div>
-        <span class="text-xs font-black text-amber-400 bg-amber-500/15 border border-amber-500/30 px-2.5 py-1 rounded-xl" id="habitsCompletedCounter">0 / 5 Today</span>
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-black text-amber-400 bg-amber-500/15 border border-amber-500/30 px-2.5 py-1 rounded-xl" id="habitsCompletedCounter">0 / 0 Today</span>
+          <button id="addNewHabitBtn" type="button" class="btn-press px-2.5 py-1 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-400 font-black text-xs flex items-center gap-1 transition shadow-glow-emerald">
+            <i data-lucide="plus" class="w-3.5 h-3.5 stroke-[2.5]"></i> New Habit
+          </button>
+        </div>
       </div>
 
       <div id="habitGridCardsContainer" class="space-y-3">
-        <!-- Rendered in app.js -->
+        <!-- Rendered in app.js with Edit & Delete options -->
       </div>
     </div>
 
@@ -612,6 +617,79 @@
         </button>
         <button id="modalSaveBtn" type="button" class="btn-press flex-1 py-2.5 px-4 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-surface-950 rounded-2xl text-xs font-black transition shadow-glow-emerald">
           Save Plan
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SMALL CENTERED HABIT MODAL (Edit / New Habit) -->
+  <div id="habitModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="bg-surface-900 w-full max-w-sm rounded-[28px] border border-surface-750 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[92vh]">
+      
+      <!-- Modal Header -->
+      <div class="px-5 py-3.5 border-b border-surface-800 flex items-center justify-between bg-surface-850">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+          <h3 class="text-sm font-black text-white" id="habitModalTitle">New Habit</h3>
+        </div>
+        <button id="closeHabitModalBtn" type="button" class="btn-press p-1.5 text-slate-400 hover:text-white rounded-xl bg-surface-800 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-5 overflow-y-auto space-y-4 text-xs">
+        
+        <!-- Quick Emoji Selector -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-black uppercase text-slate-400 tracking-wider">Choose Icon</label>
+          <div class="grid grid-cols-6 gap-2" id="habitEmojiGrid">
+            <button type="button" data-emoji="💧" class="habit-emoji-btn btn-press p-2 rounded-xl bg-surface-850 border border-surface-750 text-xl text-center hover:border-emerald-500">💧</button>
+            <button type="button" data-emoji="🏋️" class="habit-emoji-btn btn-press p-2 rounded-xl bg-surface-850 border border-surface-750 text-xl text-center hover:border-emerald-500">🏋️</button>
+            <button type="button" data-emoji="📖" class="habit-emoji-btn btn-press p-2 rounded-xl bg-surface-850 border border-surface-750 text-xl text-center hover:border-emerald-500">📖</button>
+            <button type="button" data-emoji="🧘" class="habit-emoji-btn btn-press p-2 rounded-xl bg-surface-850 border border-surface-750 text-xl text-center hover:border-emerald-500">🧘</button>
+            <button type="button" data-emoji="🏃" class="habit-emoji-btn btn-press p-2 rounded-xl bg-surface-850 border border-surface-750 text-xl text-center hover:border-emerald-500">🏃</button>
+            <button type="button" data-emoji="💻" class="habit-emoji-btn btn-press p-2 rounded-xl bg-surface-850 border border-surface-750 text-xl text-center hover:border-emerald-500">💻</button>
+            <button type="button" data-emoji="🥗" class="habit-emoji-btn btn-press p-2 rounded-xl bg-surface-850 border border-surface-750 text-xl text-center hover:border-emerald-500">🥗</button>
+            <button type="button" data-emoji="☕" class="habit-emoji-btn btn-press p-2 rounded-xl bg-surface-850 border border-surface-750 text-xl text-center hover:border-emerald-500">☕</button>
+            <button type="button" data-emoji="🎯" class="habit-emoji-btn btn-press p-2 rounded-xl bg-surface-850 border border-surface-750 text-xl text-center hover:border-emerald-500">🎯</button>
+            <button type="button" data-emoji="😴" class="habit-emoji-btn btn-press p-2 rounded-xl bg-surface-850 border border-surface-750 text-xl text-center hover:border-emerald-500">😴</button>
+            <button type="button" data-emoji="🚶" class="habit-emoji-btn btn-press p-2 rounded-xl bg-surface-850 border border-surface-750 text-xl text-center hover:border-emerald-500">🚶</button>
+            <button type="button" data-emoji="🔥" class="habit-emoji-btn btn-press p-2 rounded-xl bg-surface-850 border border-surface-750 text-xl text-center hover:border-emerald-500">🔥</button>
+          </div>
+        </div>
+
+        <!-- Habit Title Input -->
+        <div class="space-y-1">
+          <label class="text-[11px] font-black uppercase text-slate-400 tracking-wider">Habit Name</label>
+          <div class="flex items-center gap-2">
+            <span id="habitSelectedEmojiPreview" class="text-2xl p-2 rounded-2xl bg-surface-850 border border-surface-750">💧</span>
+            <input type="text" id="habitTitleInput" placeholder="e.g. Drink 2L Water, Gym, Reading" class="flex-1 bg-surface-850 border border-surface-800 rounded-2xl px-3.5 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-xs font-bold">
+          </div>
+        </div>
+
+        <!-- Category Tag -->
+        <div class="space-y-1">
+          <label class="text-[11px] font-black uppercase text-slate-400 tracking-wider">Category</label>
+          <select id="habitCategorySelect" class="w-full bg-surface-850 border border-surface-800 rounded-2xl px-3 py-2.5 text-white font-bold text-xs focus:outline-none">
+            <option value="health">Health & Fitness</option>
+            <option value="focus">Focus & Productivity</option>
+            <option value="learning">Learning & Reading</option>
+            <option value="routine">Routine & Wellness</option>
+            <option value="personal">Personal & Mindset</option>
+          </select>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-3.5 border-t border-surface-800 bg-surface-850 flex items-center justify-between gap-2.5">
+        <button id="habitDeleteBtn" type="button" class="btn-press py-2.5 px-4 bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 rounded-2xl text-xs font-black transition border border-rose-500/25 hidden">
+          Delete
+        </button>
+        <button id="habitSaveBtn" type="button" class="btn-press flex-1 py-2.5 px-4 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-surface-950 rounded-2xl text-xs font-black transition shadow-glow-emerald">
+          Save Habit
         </button>
       </div>
 
