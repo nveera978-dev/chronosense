@@ -1,12 +1,11 @@
 /**
- * ChronoSense | Habit & Time Planner Engine v3.2
- * Minimal, Spacious Play Store Aesthetics
- * Week Navigation, Day Types (Workday/Weekend/PTO/Rest), Teams Calendar Blueprint
+ * DayFlow | Habit & Time Architecture Engine
+ * Apple-grade Minimalist Luxury • Rich SFX Sound Engine • One-Handed Ergonomics
  */
 
-// --- CONSTANTS & CONFIG ---
-const STORAGE_KEY = 'chronosense_v3';
-const SETTINGS_KEY = 'chronosense_settings_v3';
+// --- STORAGE KEYS & COMPATIBILITY ---
+const STORAGE_KEY = 'dayflow_v1';
+const SETTINGS_KEY = 'dayflow_settings_v1';
 
 const CATEGORY_META = {
   meeting: { label: 'Teams Meeting', color: '#6366f1', bg: 'rgba(99, 102, 241, 0.15)', border: 'rgba(99, 102, 241, 0.3)', icon: 'users' },
@@ -34,7 +33,7 @@ const LEVEL_TIERS = [
   { level: 5, title: 'Titan Grandmaster', minXp: 2000 }
 ];
 
-// Standard Blueprints (Like MS Teams / Google Calendar)
+// Standard Blueprints
 const WORKDAY_BLUEPRINT = [
   { startHour: 7, durationMins: 120, title: 'YouTube Finance Automation & AI Engine', category: 'investment', eisenhower: 'q2', isMultitask: false },
   { startHour: 10, durationMins: 45, title: 'Teams Sync / Client Standup', category: 'meeting', eisenhower: 'q1', isMultitask: false },
@@ -55,8 +54,8 @@ const WEEKEND_BLUEPRINT = [
 let currentDateStr = getTodayDateStr();
 let appData = loadAppData();
 let appSettings = loadSettings();
-let selectedDurationMins = 240; // Default 4 hours
-let modalMode = 'plan'; // 'plan' or 'direct'
+let selectedDurationMins = 240;
+let modalMode = 'plan';
 let currentEditingPlanId = null;
 let currentEditingHour = null;
 let donutChartInstance = null;
@@ -65,7 +64,10 @@ let audioCtx = null;
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(e => console.log('SW Note:', e));
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+      // Auto check for updates on app open
+      reg.update().catch(() => {});
+    }).catch(e => console.log('SW Note:', e));
   }
 
   // Populate sample day if brand new
@@ -79,9 +81,15 @@ document.addEventListener('DOMContentLoaded', () => {
   if (window.lucide) lucide.createIcons();
 });
 
-// --- AUDIO SYNTHESIZER ---
-function playSound(type) {
+// --- LUXURY SFX AUDIO SYNTHESIZER ---
+function playSfx(type) {
+  // Always trigger subtle haptic vibration on mobile if available
+  if ('vibrate' in navigator) {
+    try { navigator.vibrate(type === 'quest' ? [15, 40, 15] : 8); } catch (e) {}
+  }
+
   if (!appSettings.player?.soundEnabled) return;
+
   try {
     if (!audioCtx) {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -91,48 +99,81 @@ function playSound(type) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
 
     const now = audioCtx.currentTime;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
 
-    if (type === 'check') {
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(523.25, now);
-      osc.frequency.setValueAtTime(659.25, now + 0.08);
-      osc.frequency.setValueAtTime(783.99, now + 0.16);
-      gain.gain.setValueAtTime(0.2, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-      osc.start(now);
-      osc.stop(now + 0.3);
-    } else if (type === 'xp') {
+    if (type === 'tab') {
+      // Smooth organic glass pop / tick for tab navigation
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, now);
-      osc.frequency.exponentialRampToValueAtTime(1318.51, now + 0.15);
-      gain.gain.setValueAtTime(0.25, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+      osc.frequency.setValueAtTime(680, now);
+      osc.frequency.exponentialRampToValueAtTime(320, now + 0.05);
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
       osc.start(now);
-      osc.stop(now + 0.25);
-    } else if (type === 'victory') {
+      osc.stop(now + 0.055);
+    } else if (type === 'tap') {
+      // Crisp subtle tactile click
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(950, now);
+      osc.frequency.exponentialRampToValueAtTime(400, now + 0.035);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+      osc.start(now);
+      osc.stop(now + 0.04);
+    } else if (type === 'check') {
+      // Satisfying two-tone harmonic glass chime (D5 -> A5)
+      [587.33, 880].forEach((freq, idx) => {
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.connect(g);
+        g.connect(audioCtx.destination);
+        o.type = 'sine';
+        o.frequency.setValueAtTime(freq, now + idx * 0.07);
+        g.gain.setValueAtTime(0.18, now + idx * 0.07);
+        g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.22);
+        o.start(now + idx * 0.07);
+        o.stop(now + idx * 0.07 + 0.23);
+      });
+    } else if (type === 'quest' || type === 'victory') {
+      // Luxurious 4-tone victory arpeggio (C5 - E5 - G5 - C6)
       [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
         const o = audioCtx.createOscillator();
         const g = audioCtx.createGain();
         o.connect(g);
         g.connect(audioCtx.destination);
         o.type = 'triangle';
-        o.frequency.setValueAtTime(freq, now + idx * 0.1);
-        g.gain.setValueAtTime(0.3, now + idx * 0.1);
-        g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.3);
-        o.start(now + idx * 0.1);
-        o.stop(now + idx * 0.1 + 0.35);
+        o.frequency.setValueAtTime(freq, now + idx * 0.08);
+        g.gain.setValueAtTime(0.22, now + idx * 0.08);
+        g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.35);
+        o.start(now + idx * 0.08);
+        o.stop(now + idx * 0.08 + 0.36);
       });
+    } else if (type === 'swoosh') {
+      // Blueprint resonant sweep
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(320, now);
+      osc.frequency.exponentialRampToValueAtTime(840, now + 0.16);
+      gain.gain.setValueAtTime(0.16, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+      osc.start(now);
+      osc.stop(now + 0.23);
     }
   } catch (e) {}
 }
 
 function fireConfetti() {
   if (typeof window.confetti === 'function') {
-    window.confetti({ particleCount: 70, spread: 60, origin: { y: 0.65 }, colors: ['#10b981', '#06b6d4', '#6366f1', '#fbbf24', '#8b5cf6'] });
+    window.confetti({ particleCount: 75, spread: 65, origin: { y: 0.65 }, colors: ['#10b981', '#06b6d4', '#6366f1', '#fbbf24'] });
   }
 }
 
@@ -144,10 +185,10 @@ function addXP(amount, reason = '') {
   const newLevelObj = getPlayerLevel(appSettings.player.xp);
 
   saveSettings();
-  playSound('xp');
+  playSfx('check');
 
   if (newLevelObj.level > oldLevel) {
-    playSound('victory');
+    playSfx('quest');
     fireConfetti();
   }
   updatePlayerHeader();
@@ -163,18 +204,31 @@ function getPlayerLevel(xp) {
 function updatePlayerHeader() {
   const p = appSettings.player || { xp: 850, soundEnabled: true };
   const lvl = getPlayerLevel(p.xp);
+  
   const badge = document.getElementById('playerLevelBadge');
   if (badge) badge.textContent = `L${lvl.level}`;
+  
   const title = document.getElementById('playerTitleText');
-  if (title) title.textContent = lvl.title;
-  const xpText = document.getElementById('playerXpText');
-  if (xpText) xpText.textContent = `${p.xp} XP`;
+  if (title) title.innerHTML = `${lvl.title} • <span id="playerXpText">${p.xp} XP</span>`;
 
+  // Persistent Sound Button (No Layout Bugs)
+  const soundIconWrap = document.getElementById('soundIconWrapper');
+  const soundStatusText = document.getElementById('soundStatusText');
   const soundBtn = document.getElementById('soundToggleBtn');
-  if (soundBtn) {
-    soundBtn.innerHTML = p.soundEnabled 
-      ? '<i data-lucide="volume-2" class="w-4 h-4 text-amber-400"></i>' 
-      : '<i data-lucide="volume-x" class="w-4 h-4 text-slate-500"></i>';
+
+  if (soundBtn && soundIconWrap && soundStatusText) {
+    if (p.soundEnabled) {
+      soundIconWrap.innerHTML = '<i data-lucide="volume-2" class="w-4 h-4 text-emerald-400"></i>';
+      soundStatusText.textContent = 'ON';
+      soundStatusText.className = 'text-[11px] font-black text-emerald-400';
+      soundBtn.className = 'btn-press flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl bg-surface-850 border border-emerald-500/30 text-slate-300 font-bold text-xs shadow-sm';
+    } else {
+      soundIconWrap.innerHTML = '<i data-lucide="volume-x" class="w-4 h-4 text-slate-500"></i>';
+      soundStatusText.textContent = 'OFF';
+      soundStatusText.className = 'text-[11px] font-black text-slate-500';
+      soundBtn.className = 'btn-press flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl bg-surface-850 border border-surface-750 text-slate-400 font-bold text-xs';
+    }
+    if (window.lucide) lucide.createIcons();
   }
 }
 
@@ -224,7 +278,7 @@ function formatCustomSpan(startHour, durationMins) {
 
 function getWeekRangeText(dateStr) {
   const activeDate = parseDateStr(dateStr);
-  const currentDayOfWeek = activeDate.getDay(); // 0 is Sunday
+  const currentDayOfWeek = activeDate.getDay();
   const sunday = new Date(activeDate);
   sunday.setDate(activeDate.getDate() - currentDayOfWeek);
   const saturday = new Date(sunday);
@@ -241,10 +295,10 @@ function getWeekRangeText(dateStr) {
   }
 }
 
-// --- DATA STORAGE ---
+// --- DATA STORAGE & MIGRATION ---
 function loadAppData() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('chronosense_data_v2') || localStorage.getItem('chronosense_data_v1');
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('chronosense_v3') || localStorage.getItem('chronosense_data_v2');
     return raw ? JSON.parse(raw) : {};
   } catch (e) {
     return {};
@@ -259,7 +313,7 @@ function saveAppData() {
 
 function loadSettings() {
   try {
-    const raw = localStorage.getItem(SETTINGS_KEY);
+    const raw = localStorage.getItem(SETTINGS_KEY) || localStorage.getItem('chronosense_settings_v3');
     return raw ? JSON.parse(raw) : {
       player: { xp: 850, soundEnabled: true },
       habits: DEFAULT_HABITS,
@@ -310,7 +364,6 @@ function injectSampleDayData(dateStr) {
     { id: 'p5', startHour: 23, durationMins: 480, title: 'Night Sleep & Full Recovery', category: 'sleep', eisenhower: 'q2', isMultitask: false, confirmed: false }
   ];
 
-  // Verified entries (confirmed plans pushed to tracker ledger)
   day.entries = {
     7: { title: 'YouTube Finance Automation & AI Engine', category: 'investment', eisenhower: 'q2', duration: 60, isMultitask: false },
     8: { title: 'YouTube Finance Automation & AI Engine', category: 'investment', eisenhower: 'q2', duration: 60, isMultitask: false },
@@ -324,9 +377,9 @@ function injectSampleDayData(dateStr) {
   saveAppData();
 }
 
-// --- SETUP EVENT LISTENERS ---
+// --- SETUP EVENT LISTENERS WITH RICH SFX ---
 function setupEventListeners() {
-  // Navigation Tabs
+  // Navigation Tabs with 'tab' SFX
   const navMap = {
     navTabPlanner: 'planner',
     navTabTracker: 'tracker',
@@ -335,31 +388,42 @@ function setupEventListeners() {
     navTabSettings: 'settings'
   };
   Object.keys(navMap).forEach(id => {
-    document.getElementById(id)?.addEventListener('click', () => switchTab(navMap[id]));
+    document.getElementById(id)?.addEventListener('click', () => {
+      playSfx('tab');
+      switchTab(navMap[id]);
+    });
   });
 
-  // Sound Toggle
+  // Sound Toggle with Bug Fix
   document.getElementById('soundToggleBtn')?.addEventListener('click', () => {
     if (!appSettings.player) appSettings.player = { xp: 850, soundEnabled: true };
     appSettings.player.soundEnabled = !appSettings.player.soundEnabled;
     saveSettings();
     updatePlayerHeader();
-    if (appSettings.player.soundEnabled) playSound('xp');
+    if (appSettings.player.soundEnabled) playSfx('tap');
   });
 
   // Today Quick Button
   document.getElementById('todayQuickBtn')?.addEventListener('click', () => {
+    playSfx('tap');
     currentDateStr = getTodayDateStr();
     refreshAllViews();
   });
 
   // Week Navigation (< Previous Week | Next Week >)
-  document.getElementById('prevWeekBtn')?.addEventListener('click', () => navigateWeek(-1));
-  document.getElementById('nextWeekBtn')?.addEventListener('click', () => navigateWeek(1));
+  document.getElementById('prevWeekBtn')?.addEventListener('click', () => {
+    playSfx('tap');
+    navigateWeek(-1);
+  });
+  document.getElementById('nextWeekBtn')?.addEventListener('click', () => {
+    playSfx('tap');
+    navigateWeek(1);
+  });
 
   // Day Type Switcher Pills (Work / Wknd / PTO / Rest)
   document.querySelectorAll('#dayTypePillGroup .day-type-pill').forEach(btn => {
     btn.addEventListener('click', () => {
+      playSfx('tap');
       const type = btn.getAttribute('data-type');
       setDayType(type);
     });
@@ -370,13 +434,23 @@ function setupEventListeners() {
   document.getElementById('applyWeekBlueprintBtn')?.addEventListener('click', applyWeekBlueprint);
 
   // Floating Plus Button & Open Plan Modal
-  document.getElementById('floatingPlusBtn')?.addEventListener('click', () => openEntryModal(new Date().getHours(), 120, 'plan'));
-  document.getElementById('openPlanModalBtn')?.addEventListener('click', () => openEntryModal(new Date().getHours(), 120, 'plan'));
-  document.getElementById('closeEntryModalBtn')?.addEventListener('click', closeEntryModal);
+  document.getElementById('floatingPlusBtn')?.addEventListener('click', () => {
+    playSfx('tap');
+    openEntryModal(new Date().getHours(), 120, 'plan');
+  });
+  document.getElementById('openPlanModalBtn')?.addEventListener('click', () => {
+    playSfx('tap');
+    openEntryModal(new Date().getHours(), 120, 'plan');
+  });
+  document.getElementById('closeEntryModalBtn')?.addEventListener('click', () => {
+    playSfx('tap');
+    closeEntryModal();
+  });
 
   // Quick Routine & Teams Template Buttons
   document.querySelectorAll('.plan-tpl-btn').forEach(btn => {
     btn.addEventListener('click', () => {
+      playSfx('tap');
       const tpl = btn.getAttribute('data-tpl');
       if (tpl === 'teams') addQuickPlan(new Date().getHours(), 45, 'Teams Meeting / Sync', 'meeting', 'q1');
       else if (tpl === 'office') addQuickPlan(14, 240, 'Office Work (Core Duties)', 'maintenance', 'q1');
@@ -388,19 +462,26 @@ function setupEventListeners() {
   });
 
   // Modal Mode Toggle: Plan vs Direct
-  document.getElementById('modalModePlanBtn')?.addEventListener('click', () => setModalMode('plan'));
-  document.getElementById('modalModeDirectBtn')?.addEventListener('click', () => setModalMode('direct'));
+  document.getElementById('modalModePlanBtn')?.addEventListener('click', () => {
+    playSfx('tap');
+    setModalMode('plan');
+  });
+  document.getElementById('modalModeDirectBtn')?.addEventListener('click', () => {
+    playSfx('tap');
+    setModalMode('direct');
+  });
 
   // Duration Buttons in Modal
   document.querySelectorAll('#modalDurBtns .dur-btn').forEach(btn => {
     btn.addEventListener('click', () => {
+      playSfx('tap');
       const minsVal = btn.getAttribute('data-mins');
       const customRow = document.getElementById('customDurationRow');
 
       document.querySelectorAll('#modalDurBtns .dur-btn').forEach(b => {
-        b.className = 'dur-btn py-1 px-1 rounded-lg bg-surface-800 hover:bg-surface-700 text-slate-300 text-center font-bold border border-surface-700 transition';
+        b.className = 'dur-btn btn-press py-2 rounded-xl bg-surface-800 text-slate-300 text-center font-bold border border-surface-750 transition';
       });
-      btn.className = 'dur-btn py-1 px-1 rounded-lg bg-emerald-500/20 text-emerald-400 text-center font-black border border-emerald-500/40 transition';
+      btn.className = 'dur-btn btn-press py-2 rounded-xl bg-emerald-500/20 text-emerald-400 text-center font-black border border-emerald-500/40 transition';
 
       if (minsVal === 'custom') {
         customRow.classList.remove('hidden');
@@ -427,6 +508,7 @@ function setupEventListeners() {
   // Preset Tiles in Modal
   document.querySelectorAll('.preset-tile').forEach(btn => {
     btn.addEventListener('click', () => {
+      playSfx('tap');
       const preset = btn.getAttribute('data-preset');
       const dur = btn.getAttribute('data-dur');
       const isMulti = btn.getAttribute('data-multi') === 'true';
@@ -437,9 +519,9 @@ function setupEventListeners() {
       if (dur) {
         selectedDurationMins = parseInt(dur, 10);
         document.querySelectorAll('#modalDurBtns .dur-btn').forEach(b => {
-          b.className = 'dur-btn py-1 px-1 rounded-lg bg-surface-800 hover:bg-surface-700 text-slate-300 text-center font-bold border border-surface-700 transition';
+          b.className = 'dur-btn btn-press py-2 rounded-xl bg-surface-800 text-slate-300 text-center font-bold border border-surface-750 transition';
           if (b.getAttribute('data-mins') == dur) {
-            b.className = 'dur-btn py-1 px-1 rounded-lg bg-emerald-500/20 text-emerald-400 text-center font-black border border-emerald-500/40 transition';
+            b.className = 'dur-btn btn-press py-2 rounded-xl bg-emerald-500/20 text-emerald-400 text-center font-black border border-emerald-500/40 transition';
           }
         });
         document.getElementById('customDurationRow')?.classList.add('hidden');
@@ -452,6 +534,7 @@ function setupEventListeners() {
   });
 
   document.getElementById('modalStartHourSelect')?.addEventListener('change', (e) => {
+    playSfx('tap');
     currentEditingHour = parseInt(e.target.value, 10);
     updateModalSpanSummary();
   });
@@ -466,16 +549,24 @@ function setupEventListeners() {
   document.getElementById('confirmAllPendingBtn')?.addEventListener('click', confirmAllPendingPlans);
 
   // Backup & Export
-  document.getElementById('exportCsvBtn')?.addEventListener('click', exportCsvData);
-  document.getElementById('backupJsonBtn')?.addEventListener('click', backupJsonData);
+  document.getElementById('exportCsvBtn')?.addEventListener('click', () => {
+    playSfx('tap');
+    exportCsvData();
+  });
+  document.getElementById('backupJsonBtn')?.addEventListener('click', () => {
+    playSfx('tap');
+    backupJsonData();
+  });
   document.getElementById('importJsonInput')?.addEventListener('change', importJsonData);
   document.getElementById('loadSampleDataBtn')?.addEventListener('click', () => {
+    playSfx('tap');
     if (confirm('Reset and load sample schedule for today?')) {
       injectSampleDayData(currentDateStr);
       refreshAllViews();
     }
   });
   document.getElementById('clearTodayBtn')?.addEventListener('click', () => {
+    playSfx('tap');
     if (confirm("Clear today's schedule and audit?")) {
       const day = ensureDayRecord(currentDateStr);
       day.plans = [];
@@ -497,7 +588,6 @@ function setDayType(newType) {
   const day = ensureDayRecord(currentDateStr);
   day.dayType = newType;
   saveAppData();
-  playSound('check');
   refreshAllViews();
 }
 
@@ -554,11 +644,9 @@ function renderDayHeader() {
   const monthName = months[activeDate.getMonth()];
   const dayNum = activeDate.getDate();
 
-  // Selected Day Title
   const titleEl = document.getElementById('selectedDayTitle');
   if (titleEl) titleEl.textContent = `${dayName}, ${monthName} ${dayNum}`;
 
-  // Today Badge
   const todayBadge = document.getElementById('isTodayBadge');
   if (todayBadge) {
     if (currentDateStr === getTodayDateStr()) {
@@ -568,11 +656,9 @@ function renderDayHeader() {
     }
   }
 
-  // Week range label
   const rangeLabel = document.getElementById('weekRangeLabel');
   if (rangeLabel) rangeLabel.textContent = getWeekRangeText(currentDateStr);
 
-  // Day Type Badge & Pills
   const dayTypeBadge = document.getElementById('dayTypeBadge');
   const typeLabels = {
     workday: { text: '💼 Workday', bg: 'bg-blue-500/20 text-blue-300 border border-blue-500/30' },
@@ -583,16 +669,16 @@ function renderDayHeader() {
   const activeConfig = typeLabels[day.dayType] || typeLabels.workday;
   if (dayTypeBadge) {
     dayTypeBadge.textContent = activeConfig.text;
-    dayTypeBadge.className = `text-[10px] font-black px-2 py-0.5 rounded-lg ${activeConfig.bg}`;
+    dayTypeBadge.className = `text-xs font-black px-2.5 py-1 rounded-xl ${activeConfig.bg}`;
   }
 
   // Highlight active pill
   document.querySelectorAll('#dayTypePillGroup .day-type-pill').forEach(pill => {
     const pType = pill.getAttribute('data-type');
     if (pType === day.dayType) {
-      pill.className = 'day-type-pill text-[10px] font-black py-1 rounded-lg bg-surface-800 text-white shadow-sm border border-surface-700 transition flex items-center justify-center gap-1';
+      pill.className = 'day-type-pill btn-press text-xs font-black py-2 rounded-xl bg-surface-800 text-white shadow-sm border border-surface-700 transition flex items-center justify-center gap-1.5';
     } else {
-      pill.className = 'day-type-pill text-[10px] font-black py-1 rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center gap-1';
+      pill.className = 'day-type-pill btn-press text-xs font-black py-2 rounded-xl text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5';
     }
   });
 
@@ -608,7 +694,7 @@ function renderDayHeader() {
     } else if (day.dayType === 'rest') {
       holidayBanner.classList.remove('hidden');
       if (holidayTitle) holidayTitle.innerHTML = '🎉 Family Function / Rest Day Active';
-      if (holidaySub) holidaySub.textContent = 'Attending a function or taking full rest? Zero guilt! Your streaks are protected without breaking.';
+      if (holidaySub) holidaySub.textContent = 'Attending a wedding or taking full rest? Zero guilt! Your streaks are protected without breaking.';
     } else {
       holidayBanner.classList.add('hidden');
     }
@@ -626,14 +712,14 @@ function renderDayHeader() {
   }
 }
 
-// --- TOP WEEK CAPSULE BAR (Play Store Habit Tracker Style) ---
+// --- TOP WEEK CAPSULE BAR (Spacious & Thumb-Friendly) ---
 function renderWeekCapsules() {
   const container = document.getElementById('weekCapsuleBar');
   if (!container) return;
   container.innerHTML = '';
 
   const activeDate = parseDateStr(currentDateStr);
-  const currentDayOfWeek = activeDate.getDay(); // 0 is Sunday
+  const currentDayOfWeek = activeDate.getDay();
   const sunday = new Date(activeDate);
   sunday.setDate(activeDate.getDate() - currentDayOfWeek);
 
@@ -646,7 +732,6 @@ function renderWeekCapsules() {
     const isSelected = dateKey === currentDateStr;
     const isWeekend = (i === 0 || i === 6);
 
-    // Day Data & Completion
     const dayData = appData[dateKey];
     let focusHours = 0;
     const dayType = dayData?.dayType || (isWeekend ? 'weekend' : 'workday');
@@ -660,7 +745,6 @@ function renderWeekCapsules() {
     }
     const pct = Math.min(100, Math.round((focusHours / 5.0) * 100));
 
-    // Icon tag for day type
     let typeIcon = '';
     if (dayType === 'holiday') typeIcon = '🏖️';
     else if (dayType === 'rest') typeIcon = '🎉';
@@ -668,24 +752,25 @@ function renderWeekCapsules() {
 
     const capsule = document.createElement('button');
     capsule.type = 'button';
-    capsule.className = `flex flex-col items-center py-1.5 px-2 rounded-2xl border transition-all cursor-pointer select-none min-w-[42px] ${
+    capsule.className = `btn-press flex flex-col items-center py-2 px-2.5 rounded-2xl border transition-all cursor-pointer select-none min-w-[46px] ${
       isSelected 
-        ? 'bg-emerald-500/20 border-emerald-500/60 text-white shadow-glow-sm' 
+        ? 'bg-emerald-500/20 border-emerald-500/70 text-white shadow-glow-emerald' 
         : isWeekend
-          ? 'bg-surface-850/80 border-surface-700/60 text-amber-200/80 hover:border-amber-500/40'
-          : 'bg-surface-850/50 border-surface-800/80 text-slate-400 hover:border-surface-700'
+          ? 'bg-surface-850/90 border-surface-700/60 text-amber-200/90 hover:border-amber-500/40'
+          : 'bg-surface-850/60 border-surface-800/80 text-slate-400 hover:border-surface-700'
     }`;
 
     capsule.innerHTML = `
       <div class="flex items-center gap-0.5">
-        <span class="text-[9px] font-bold ${isSelected ? 'text-emerald-400' : isWeekend ? 'text-amber-400/90' : 'text-slate-400'}">${dayLetters[i]}</span>
-        ${typeIcon ? `<span class="text-[8px]">${typeIcon}</span>` : ''}
+        <span class="text-[11px] font-bold ${isSelected ? 'text-emerald-400' : isWeekend ? 'text-amber-400' : 'text-slate-400'}">${dayLetters[i]}</span>
+        ${typeIcon ? `<span class="text-[10px]">${typeIcon}</span>` : ''}
       </div>
-      <span class="text-xs font-black my-0.5">${dateObj.getDate()}</span>
-      <div class="w-4 h-1 rounded-full ${dayType === 'holiday' || dayType === 'rest' ? 'bg-indigo-400' : (pct >= 100 ? 'bg-cyan-400 shadow-glow-cyan' : (pct > 0 ? 'bg-emerald-500' : 'bg-surface-700'))}"></div>
+      <span class="text-sm font-black my-0.5">${dateObj.getDate()}</span>
+      <div class="w-5 h-1 rounded-full ${dayType === 'holiday' || dayType === 'rest' ? 'bg-indigo-400' : (pct >= 100 ? 'bg-cyan-400 shadow-glow-cyan' : (pct > 0 ? 'bg-emerald-500' : 'bg-surface-700'))}"></div>
     `;
 
     capsule.addEventListener('click', () => {
+      playSfx('tap');
       currentDateStr = dateKey;
       refreshAllViews();
     });
@@ -696,12 +781,12 @@ function renderWeekCapsules() {
 
 // --- APPLY BLUEPRINTS (Teams Style) ---
 function applyTodayBlueprint() {
+  playSfx('swoosh');
   const day = ensureDayRecord(currentDateStr);
   const isWeekend = day.dayType === 'weekend';
   const blueprint = isWeekend ? WEEKEND_BLUEPRINT : WORKDAY_BLUEPRINT;
 
   blueprint.forEach(block => {
-    // Avoid exact duplicate startHours if already present
     const exists = day.plans.some(p => p.startHour === block.startHour && p.title === block.title);
     if (!exists) {
       day.plans.push({
@@ -718,16 +803,15 @@ function applyTodayBlueprint() {
   });
 
   saveAppData();
-  playSound('check');
   addXP(30, 'Blueprint Applied');
   refreshAllViews();
 }
 
 function applyWeekBlueprint() {
+  playSfx('swoosh');
   const activeDate = parseDateStr(currentDateStr);
   const currentDayOfWeek = activeDate.getDay();
   const monday = new Date(activeDate);
-  // Calculate Monday of the active week (Sunday = 0, Mon = 1)
   const diffToMon = (currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek);
   monday.setDate(activeDate.getDate() + diffToMon);
 
@@ -738,7 +822,6 @@ function applyWeekBlueprint() {
     const dateKey = formatDateStr(d);
     const day = ensureDayRecord(dateKey);
 
-    // Skip if user explicitly set to holiday or rest
     if (day.dayType === 'holiday' || day.dayType === 'rest') continue;
 
     day.dayType = 'workday';
@@ -761,14 +844,14 @@ function applyWeekBlueprint() {
   }
 
   saveAppData();
-  playSound('victory');
+  playSfx('quest');
   fireConfetti();
   addXP(100, 'Weekly Schedule Synced');
   alert('Workday Blueprint scheduled for Monday through Friday! Your calendar is ready without any morning friction.');
   refreshAllViews();
 }
 
-// --- VIEW 1: PLANNER (Morning: Add & Manage Schedule Blocks) ---
+// --- VIEW 1: PLANNER (Morning: Clean Schedule Cards) ---
 function renderPlanner() {
   const container = document.getElementById('plannerListContainer');
   if (!container) return;
@@ -785,16 +868,15 @@ function renderPlanner() {
 
   if (plans.length === 0) {
     container.innerHTML = `
-      <div class="text-center py-10 text-slate-500 text-xs bg-surface-900/40 rounded-2xl border border-dashed border-surface-800 p-6 space-y-2">
-        <span class="text-2xl">📅</span>
-        <p class="font-bold text-white">No plans set for this day.</p>
-        <p class="text-[11px] text-slate-400">Tap "Apply Today" above or use quick templates to map your schedule in seconds.</p>
+      <div class="text-center py-12 text-slate-400 text-xs bg-surface-900/60 rounded-3xl border border-dashed border-surface-800 p-8 space-y-2">
+        <span class="text-3xl">📅</span>
+        <p class="font-bold text-white text-sm">No plans set for today.</p>
+        <p class="text-xs text-slate-400">Tap "Apply Today" above or tap any template chip to plan your day in seconds.</p>
       </div>
     `;
     return;
   }
 
-  // Sort plans chronologically
   plans.sort((a, b) => a.startHour - b.startHour);
 
   plans.forEach(plan => {
@@ -802,61 +884,60 @@ function renderPlanner() {
     const card = document.createElement('div');
     const isDone = plan.confirmed;
 
-    card.className = `p-3 rounded-2xl border transition-all ${
+    card.className = `p-4 rounded-3xl border transition-all ${
       isDone 
-        ? 'bg-surface-900/60 border-emerald-500/30' 
-        : 'bg-surface-900 border-surface-800 hover:border-surface-700 shadow-md'
+        ? 'bg-surface-900/70 border-emerald-500/30' 
+        : 'bg-surface-900 border-surface-800 hover:border-surface-700 shadow-sm'
     }`;
 
     const spanText = formatCustomSpan(plan.startHour, plan.durationMins);
 
     card.innerHTML = `
-      <div class="flex items-start justify-between gap-2">
-        <div class="flex items-start gap-2.5">
-          <button type="button" class="plan-toggle-btn w-6 h-6 rounded-xl border flex items-center justify-center mt-0.5 transition-all ${
-            isDone ? 'bg-emerald-500 border-emerald-500 text-surface-950 font-black shadow-glow-sm' : 'border-slate-600 bg-surface-850 hover:border-emerald-400'
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-start gap-3">
+          <button type="button" class="plan-toggle-btn btn-press w-7 h-7 rounded-xl border flex items-center justify-center mt-0.5 transition-all ${
+            isDone ? 'bg-emerald-500 border-emerald-500 text-surface-950 font-black shadow-glow-emerald' : 'border-slate-600 bg-surface-850 hover:border-emerald-400'
           }">
             ${isDone ? '<i data-lucide="check" class="w-4 h-4 stroke-[3]"></i>' : ''}
           </button>
           <div>
-            <span class="text-[10px] font-bold text-slate-400">${spanText}</span>
-            <h4 class="text-xs font-black ${isDone ? 'line-through text-slate-500' : 'text-white'} leading-snug mt-0.5">${plan.title}</h4>
-            <div class="flex items-center gap-1.5 mt-1.5 flex-wrap">
-              <span class="text-[9px] font-bold px-2 py-0.5 rounded-md uppercase" style="background-color: ${meta.bg}; color: ${meta.color}">
+            <span class="text-xs font-bold text-slate-400">${spanText}</span>
+            <h4 class="text-sm font-bold ${isDone ? 'line-through text-slate-500' : 'text-white'} leading-snug mt-0.5">${plan.title}</h4>
+            <div class="flex items-center gap-2 mt-2 flex-wrap">
+              <span class="text-[10px] font-black px-2 py-0.5 rounded-lg uppercase" style="background-color: ${meta.bg}; color: ${meta.color}">
                 ${meta.label}
               </span>
-              ${plan.isMultitask ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">⚠️ Multitask</span>' : ''}
-              ${isDone ? '<span class="text-[9px] font-black text-emerald-400 flex items-center gap-0.5"><i data-lucide="shield-check" class="w-3 h-3"></i> Verified in Tracker</span>' : '<span class="text-[9px] font-semibold text-slate-500">Pending Review</span>'}
+              ${plan.isMultitask ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30">⚠️ Multitask</span>' : ''}
+              ${isDone ? '<span class="text-[10px] font-black text-emerald-400 flex items-center gap-1"><i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Verified</span>' : '<span class="text-[10px] font-semibold text-slate-500">Pending Review</span>'}
             </div>
           </div>
         </div>
 
-        <div class="flex items-center gap-1">
-          <button type="button" class="plan-edit-btn p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-surface-800 transition" title="Edit Block">
-            <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+        <div class="flex items-center gap-1 shrink-0">
+          <button type="button" class="plan-edit-btn btn-press p-2 text-slate-400 hover:text-white rounded-xl hover:bg-surface-800 transition" title="Edit Block">
+            <i data-lucide="edit-2" class="w-4 h-4"></i>
           </button>
-          <button type="button" class="plan-del-btn p-1.5 text-slate-500 hover:text-rose-400 rounded-lg hover:bg-surface-800 transition" title="Delete">
-            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          <button type="button" class="plan-del-btn btn-press p-2 text-slate-500 hover:text-rose-400 rounded-xl hover:bg-surface-800 transition" title="Delete">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
           </button>
         </div>
       </div>
     `;
 
-    // Toggle Confirm / Unconfirm
     card.querySelector('.plan-toggle-btn').addEventListener('click', () => {
       togglePlanConfirmation(plan.id);
     });
 
-    // Edit
     card.querySelector('.plan-edit-btn').addEventListener('click', () => {
+      playSfx('tap');
       currentEditingPlanId = plan.id;
       openEntryModal(plan.startHour, plan.durationMins, 'plan');
       document.getElementById('modalActivityTitleInput').value = plan.title;
       document.getElementById('modalMultitaskCheckbox').checked = !!plan.isMultitask;
     });
 
-    // Delete
     card.querySelector('.plan-del-btn').addEventListener('click', () => {
+      playSfx('tap');
       deletePlan(plan.id);
     });
 
@@ -889,14 +970,13 @@ function togglePlanConfirmation(planId) {
   plan.confirmed = !plan.confirmed;
 
   if (plan.confirmed) {
-    // Push into verified entries ledger!
     pushPlanToVerifiedEntries(plan, currentDateStr);
-    playSound('check');
+    playSfx('check');
     fireConfetti();
     addXP(25, 'Block Completed');
   } else {
-    // Remove from verified entries
     removePlanFromVerifiedEntries(plan, currentDateStr);
+    playSfx('tap');
   }
 
   saveAppData();
@@ -916,7 +996,7 @@ function confirmAllPendingPlans() {
 
   if (confirmedCount > 0) {
     saveAppData();
-    playSound('victory');
+    playSfx('quest');
     fireConfetti();
     addXP(confirmedCount * 25, 'All Plans Verified');
     refreshAllViews();
@@ -939,7 +1019,6 @@ function pushPlanToVerifiedEntries(plan, dateStr) {
         planId: plan.id
       };
     } else {
-      // Midnight wrap! (e.g. 11 PM to 7 AM sleep)
       const d = parseDateStr(dateStr);
       d.setDate(d.getDate() + 1);
       const nextDateStr = formatDateStr(d);
@@ -988,13 +1067,12 @@ function deletePlan(planId) {
   }
 }
 
-// --- VIEW 2: TRACKER (Evening 2-Minute Audit & Execution) ---
+// --- VIEW 2: TRACKER (Evening 2-Minute Audit) ---
 function renderTracker() {
   const day = ensureDayRecord(currentDateStr);
   const entries = day.entries || {};
   const isHolidayOrRest = day.dayType === 'holiday' || day.dayType === 'rest';
 
-  // 1. Calculate focused hours (Deep work: Q2 Investment, Work/Maintenance, Teams Meetings, single-focused)
   let focusHours = 0;
   let totalLoggedHours = 0;
 
@@ -1009,7 +1087,6 @@ function renderTracker() {
   const goal = isHolidayOrRest ? 2.0 : 5.0;
   const pct = Math.min(100, Math.round((focusHours / goal) * 100));
 
-  // Focus Quest Ring
   document.getElementById('trackerFocusedHoursNumber').textContent = focusHours.toFixed(1);
   const denom = document.getElementById('trackerGoalDenominatorText');
   if (denom) denom.textContent = `/ ${goal.toFixed(1)}h Goal`;
@@ -1027,7 +1104,7 @@ function renderTracker() {
 
   document.getElementById('statVerifiedTotalHours').textContent = `${totalLoggedHours.toFixed(1)}h logged`;
 
-  // 2. Pending Plans Review Banner
+  // Pending Plans Review Banner
   const pending = (day.plans || []).filter(p => !p.confirmed);
   const banner = document.getElementById('pendingReviewBanner');
   const countText = document.getElementById('pendingReviewCountText');
@@ -1040,16 +1117,16 @@ function renderTracker() {
 
     pending.forEach(p => {
       const row = document.createElement('div');
-      row.className = 'flex items-center justify-between bg-surface-900/90 p-2 rounded-xl border border-surface-800 text-xs';
+      row.className = 'flex items-center justify-between bg-surface-900/90 p-3 rounded-2xl border border-surface-800 text-xs';
       row.innerHTML = `
-        <div class="flex items-center gap-2">
-          <span class="text-base">${p.category === 'meeting' ? '👥' : p.category === 'investment' ? '📈' : p.category === 'sleep' ? '😴' : '💼'}</span>
+        <div class="flex items-center gap-3">
+          <span class="text-xl">${p.category === 'meeting' ? '👥' : p.category === 'investment' ? '📈' : p.category === 'sleep' ? '😴' : '💼'}</span>
           <div>
             <p class="font-bold text-white text-xs">${p.title}</p>
-            <p class="text-[10px] text-slate-400">${formatCustomSpan(p.startHour, p.durationMins)}</p>
+            <p class="text-xs text-slate-400 mt-0.5">${formatCustomSpan(p.startHour, p.durationMins)}</p>
           </div>
         </div>
-        <button type="button" class="verify-btn px-2.5 py-1 bg-emerald-500 hover:bg-emerald-600 text-surface-950 font-black rounded-lg text-xs shadow transition">
+        <button type="button" class="verify-btn btn-press px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-surface-950 font-black rounded-xl text-xs shadow transition">
           ✓ Done
         </button>
       `;
@@ -1062,7 +1139,6 @@ function renderTracker() {
     banner.classList.add('hidden');
   }
 
-  // 3. Verified Timeline Ledger
   renderVerifiedTimeline(entries);
 }
 
@@ -1085,7 +1161,6 @@ function renderVerifiedTimeline(entries) {
     }
     foundAny = true;
 
-    // Check contiguous identical hours
     let blockEnd = h;
     while (
       blockEnd + 1 <= endHour &&
@@ -1101,7 +1176,7 @@ function renderVerifiedTimeline(entries) {
     const meta = CATEGORY_META[entry.category] || CATEGORY_META.maintenance;
 
     const card = document.createElement('div');
-    card.className = 'p-3 rounded-2xl bg-surface-900 border shadow-md flex items-center justify-between transition';
+    card.className = 'p-3.5 rounded-3xl bg-surface-900 border shadow-sm flex items-center justify-between transition';
     card.style.borderColor = entry.isMultitask ? '#f59e0b55' : meta.border;
 
     const spanText = totalBlockHours > 1 
@@ -1110,19 +1185,19 @@ function renderVerifiedTimeline(entries) {
 
     card.innerHTML = `
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base shrink-0" style="background-color: ${meta.bg}; color: ${meta.color}">
-          <i data-lucide="${meta.icon}" class="w-4 h-4"></i>
+        <div class="w-10 h-10 rounded-2xl flex items-center justify-center text-lg shrink-0" style="background-color: ${meta.bg}; color: ${meta.color}">
+          <i data-lucide="${meta.icon}" class="w-5 h-5"></i>
         </div>
         <div>
-          <span class="text-[10px] font-bold text-slate-400">${spanText}</span>
+          <span class="text-xs font-bold text-slate-400">${spanText}</span>
           <h4 class="text-xs font-black text-white leading-tight mt-0.5">${entry.title}</h4>
-          <div class="flex items-center gap-1.5 mt-1">
-            <span class="text-[9px] font-bold px-1.5 py-0.2 rounded" style="background-color: ${meta.bg}; color: ${meta.color}">${meta.label}</span>
-            ${entry.isMultitask ? '<span class="text-[9px] font-bold text-amber-300 bg-amber-500/20 px-1 rounded">⚠️ Multitask</span>' : ''}
+          <div class="flex items-center gap-2 mt-1">
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-md" style="background-color: ${meta.bg}; color: ${meta.color}">${meta.label}</span>
+            ${entry.isMultitask ? '<span class="text-[10px] font-bold text-amber-300 bg-amber-500/20 px-1.5 rounded">⚠️ Multitask</span>' : ''}
           </div>
         </div>
       </div>
-      <button type="button" class="del-verified-btn p-2 text-slate-500 hover:text-rose-400 rounded-lg transition" title="Delete Entry">
+      <button type="button" class="del-verified-btn btn-press p-2.5 text-slate-500 hover:text-rose-400 rounded-xl transition" title="Delete Entry">
         <i data-lucide="trash-2" class="w-4 h-4"></i>
       </button>
     `;
@@ -1130,6 +1205,7 @@ function renderVerifiedTimeline(entries) {
     const startH = h;
     const countH = totalBlockHours;
     card.querySelector('.del-verified-btn').addEventListener('click', () => {
+      playSfx('tap');
       for (let i = startH; i < startH + countH; i++) {
         delete day.entries[i];
       }
@@ -1143,15 +1219,15 @@ function renderVerifiedTimeline(entries) {
 
   if (!foundAny) {
     container.innerHTML = `
-      <div class="text-center py-10 text-slate-500 text-xs bg-surface-900/40 rounded-2xl border border-surface-800 p-6">
-        <p>No verified blocks logged yet today.</p>
-        <p class="text-[10px] text-slate-400 mt-1">Confirm your plans above or tap the (+) button to log directly.</p>
+      <div class="text-center py-12 text-slate-400 text-xs bg-surface-900/60 rounded-3xl border border-surface-800 p-8 space-y-2">
+        <p class="font-bold text-white text-sm">No verified blocks logged yet today.</p>
+        <p class="text-xs text-slate-400">Confirm your plans above or tap the (+) button to log directly.</p>
       </div>
     `;
   }
 }
 
-// --- VIEW 3: BEAUTIFUL GRIDS & HABITS (Play Store Style with Protected Streaks) ---
+// --- VIEW 3: BEAUTIFUL GRIDS & HABITS (Protected Streaks) ---
 function renderHabitGrids() {
   const container = document.getElementById('habitGridCardsContainer');
   if (!container) return;
@@ -1166,10 +1242,8 @@ function renderHabitGrids() {
     const isDone = rec ? rec.completed : false;
     if (isDone) completedToday++;
 
-    // Calculate streak with holiday/rest day protection
     const streak = calculateHabitStreak(cfg.id);
 
-    // Build 28-day mini grid (4 rows of 7 days)
     let gridDotsHtml = '';
     const d = parseDateStr(currentDateStr);
     for (let dayOffset = 27; dayOffset >= 0; dayOffset--) {
@@ -1182,7 +1256,7 @@ function renderHabitGrids() {
 
       let dotColor = '#1e293b';
       if (wasDone) dotColor = cfg.color;
-      else if (isProtected) dotColor = '#6366f166'; // Muted purple for frozen protected day
+      else if (isProtected) dotColor = '#6366f166';
 
       gridDotsHtml += `
         <div class="grid-dot" style="background-color: ${dotColor}" title="${checkKey}${isProtected ? ' (Holiday/Rest - Protected)' : ''}"></div>
@@ -1190,32 +1264,31 @@ function renderHabitGrids() {
     }
 
     const card = document.createElement('div');
-    card.className = 'p-3.5 rounded-2xl bg-surface-900 border border-surface-800/80 shadow-md space-y-2.5';
+    card.className = 'p-4 rounded-3xl bg-surface-900 border border-surface-800/80 shadow-sm space-y-3';
     card.innerHTML = `
       <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2.5">
-          <div class="w-10 h-10 rounded-2xl flex items-center justify-center text-lg shrink-0" style="background-color: ${cfg.color}22">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0" style="background-color: ${cfg.color}22">
             ${cfg.icon}
           </div>
           <div>
-            <h4 class="text-xs font-black text-white leading-tight">${cfg.title}</h4>
-            <p class="text-[10px] text-amber-400 font-bold flex items-center gap-1 mt-0.5">
+            <h4 class="text-sm font-bold text-white leading-tight">${cfg.title}</h4>
+            <p class="text-xs text-amber-400 font-black flex items-center gap-1 mt-1">
               <span>🔥</span> Streak: ${streak} days
             </p>
           </div>
         </div>
 
-        <button type="button" class="habit-check-btn w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${
-          isDone ? 'text-surface-950 font-black shadow-glow-sm' : 'bg-surface-850 border border-slate-700 text-slate-500 hover:border-slate-500'
+        <button type="button" class="habit-check-btn btn-press w-11 h-11 rounded-2xl flex items-center justify-center transition-all ${
+          isDone ? 'text-surface-950 font-black shadow-glow-emerald' : 'bg-surface-850 border border-slate-700 text-slate-500 hover:border-slate-500'
         }" style="${isDone ? `background-color: ${cfg.color}` : ''}">
-          <i data-lucide="check" class="w-5 h-5 stroke-[3]"></i>
+          <i data-lucide="check" class="w-6 h-6 stroke-[3]"></i>
         </button>
       </div>
 
-      <!-- Mini 28-day dot matrix grid (Play Store style) -->
-      <div class="pt-1.5 border-t border-surface-800/80 flex items-center justify-between">
-        <span class="text-[9px] font-bold text-slate-500 uppercase">28-Day Matrix</span>
-        <div class="grid grid-flow-col grid-rows-4 gap-1">
+      <div class="pt-2 border-t border-surface-800 flex items-center justify-between">
+        <span class="text-[10px] font-bold text-slate-400 uppercase">28-Day Consistency Matrix</span>
+        <div class="grid grid-flow-col grid-rows-4 gap-1.5">
           ${gridDotsHtml}
         </div>
       </div>
@@ -1231,9 +1304,11 @@ function renderHabitGrids() {
       }
       saveAppData();
       if (r.completed) {
-        playSound('check');
+        playSfx('check');
         fireConfetti();
         addXP(20, 'Habit Maintained');
+      } else {
+        playSfx('tap');
       }
       renderHabitGrids();
     });
@@ -1253,10 +1328,9 @@ function calculateHabitStreak(habitId) {
     const key = formatDateStr(checkDate);
     const dayData = appData[key];
 
-    // Protect streak on Holiday or Rest days!
     const isHolidayOrRest = dayData && (dayData.dayType === 'holiday' || dayData.dayType === 'rest');
     if (isHolidayOrRest) {
-      continue; // Skip without breaking streak!
+      continue;
     }
 
     const rec = dayData?.habits?.find(h => h.id === habitId);
@@ -1296,13 +1370,11 @@ function renderStats() {
     if (cat === 'leak') leakMins += dur;
   });
 
-  // Eisenhower
   document.getElementById('eisenhowerQ1Val').textContent = `${(eisMins.q1 / 60).toFixed(1)}h`;
   document.getElementById('eisenhowerQ2Val').textContent = `${(eisMins.q2 / 60).toFixed(1)}h`;
   document.getElementById('eisenhowerQ3Val').textContent = `${(eisMins.q3 / 60).toFixed(1)}h`;
   document.getElementById('eisenhowerQ4Val').textContent = `${(eisMins.q4 / 60).toFixed(1)}h`;
 
-  // Focus Gauges
   const waking = Math.max(1, totalMins - catMins.sleep);
   const deepPct = Math.min(100, Math.round((deepSingleMins / waking) * 100));
   const multiPct = Math.min(100, Math.round((multitaskMins / waking) * 100));
@@ -1317,7 +1389,6 @@ function renderStats() {
   document.getElementById('gaugeLeakVal').textContent = `${(leakMins / 60).toFixed(1)}h (${leakPct}%)`;
   document.getElementById('gaugeLeakBar').style.width = `${leakPct}%`;
 
-  // Donut Chart
   const ctx = document.getElementById('categoryDonutChart');
   if (ctx) {
     if (donutChartInstance) donutChartInstance.destroy();
@@ -1337,16 +1408,16 @@ function renderStats() {
           ],
           backgroundColor: totalMins === 0 ? ['#334155'] : ['#10b981', '#3b82f6', '#6366f1', '#8b5cf6', '#f43f5e', '#f59e0b', '#475569'],
           borderWidth: 2,
-          borderColor: '#0c121d'
+          borderColor: '#070b14'
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 9 }, color: '#94a3b8' } }
+          legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10, weight: 'bold' }, color: '#94a3b8' } }
         },
-        cutout: '72%'
+        cutout: '70%'
       }
     });
   }
@@ -1360,12 +1431,11 @@ function openEntryModal(startHour, durationMins = 120, mode = 'plan') {
 
   document.getElementById('modalStartHourSelect').value = startHour;
 
-  // Set duration button highlight
   let matched = false;
   document.querySelectorAll('#modalDurBtns .dur-btn').forEach(b => {
-    b.className = 'dur-btn py-1 px-1 rounded-lg bg-surface-800 hover:bg-surface-700 text-slate-300 text-center font-bold border border-surface-700 transition';
+    b.className = 'dur-btn btn-press py-2 rounded-xl bg-surface-800 text-slate-300 text-center font-bold border border-surface-750 transition';
     if (b.getAttribute('data-mins') == durationMins) {
-      b.className = 'dur-btn py-1 px-1 rounded-lg bg-emerald-500/20 text-emerald-400 text-center font-black border border-emerald-500/40 transition';
+      b.className = 'dur-btn btn-press py-2 rounded-xl bg-emerald-500/20 text-emerald-400 text-center font-black border border-emerald-500/40 transition';
       matched = true;
     }
   });
@@ -1373,7 +1443,7 @@ function openEntryModal(startHour, durationMins = 120, mode = 'plan') {
   const customRow = document.getElementById('customDurationRow');
   if (!matched) {
     const customBtn = document.querySelector('#modalDurBtns .dur-btn[data-mins="custom"]');
-    if (customBtn) customBtn.className = 'dur-btn col-span-2 py-1 px-1 rounded-lg bg-emerald-500/20 text-emerald-400 text-center font-black border border-emerald-500/40 transition flex items-center justify-center gap-1';
+    if (customBtn) customBtn.className = 'dur-btn btn-press py-2 rounded-xl bg-emerald-500/20 text-emerald-400 text-center font-black border border-emerald-500/40 transition';
     customRow?.classList.remove('hidden');
     if (document.getElementById('customHoursInput')) document.getElementById('customHoursInput').value = Math.floor(durationMins / 60);
     if (document.getElementById('customMinsInput')) document.getElementById('customMinsInput').value = durationMins % 60;
@@ -1401,12 +1471,12 @@ function setModalMode(mode) {
   const planBtn = document.getElementById('modalModePlanBtn');
   const directBtn = document.getElementById('modalModeDirectBtn');
   if (mode === 'plan') {
-    planBtn.className = 'py-1.5 text-xs font-black rounded-lg bg-surface-800 text-emerald-400 shadow transition';
-    directBtn.className = 'py-1.5 text-xs font-black rounded-lg text-slate-400 hover:text-white transition';
+    planBtn.className = 'btn-press py-2 text-xs font-black rounded-xl bg-surface-800 text-emerald-400 shadow transition';
+    directBtn.className = 'btn-press py-2 text-xs font-black rounded-xl text-slate-400 hover:text-white transition';
     document.getElementById('modalSaveBtn').textContent = currentEditingPlanId ? 'Update Schedule Block' : 'Save to Daily Plan';
   } else {
-    directBtn.className = 'py-1.5 text-xs font-black rounded-lg bg-surface-800 text-emerald-400 shadow transition';
-    planBtn.className = 'py-1.5 text-xs font-black rounded-lg text-slate-400 hover:text-white transition';
+    directBtn.className = 'btn-press py-2 text-xs font-black rounded-xl bg-surface-800 text-emerald-400 shadow transition';
+    planBtn.className = 'btn-press py-2 text-xs font-black rounded-xl text-slate-400 hover:text-white transition';
     document.getElementById('modalSaveBtn').textContent = 'Log Directly into Tracker';
   }
 }
@@ -1430,12 +1500,12 @@ function updateModalSpanSummary() {
 }
 
 function saveModalEntry() {
+  playSfx('check');
   const day = ensureDayRecord(currentDateStr);
   const startHour = parseInt(document.getElementById('modalStartHourSelect').value, 10);
   const title = document.getElementById('modalActivityTitleInput').value.trim() || 'Scheduled Block';
   const isMulti = document.getElementById('modalMultitaskCheckbox').checked;
 
-  // Detect category from title keywords
   let cat = 'maintenance';
   let eis = 'q1';
   const lower = title.toLowerCase();
@@ -1477,7 +1547,6 @@ function saveModalEntry() {
     }
     addXP(15, 'Plan Saved');
   } else {
-    // Direct log into verified tracker
     const directPlan = {
       id: 'direct_' + Date.now(),
       startHour: startHour,
@@ -1498,6 +1567,7 @@ function saveModalEntry() {
 }
 
 function deleteCurrentEntry() {
+  playSfx('tap');
   if (currentEditingPlanId) {
     deletePlan(currentEditingPlanId);
   }
@@ -1517,12 +1587,12 @@ function exportCsvData() {
       csv += `${date},${dType},"${formatHour12(parseInt(h, 10))}",${e.title},${e.category},${e.eisenhower},${e.isMultitask ? 'YES' : 'NO'},${e.duration || 60}\n`;
     });
   });
-  downloadFile(csv, `ChronoSense_${currentDateStr}.csv`, 'text/csv');
+  downloadFile(csv, `DayFlow_${currentDateStr}.csv`, 'text/csv');
 }
 
 function backupJsonData() {
-  const payload = { version: '3.2', exportDate: new Date().toISOString(), settings: appSettings, data: appData };
-  downloadFile(JSON.stringify(payload, null, 2), `ChronoSense_Backup_${currentDateStr}.json`, 'application/json');
+  const payload = { version: '4.0', exportDate: new Date().toISOString(), settings: appSettings, data: appData };
+  downloadFile(JSON.stringify(payload, null, 2), `DayFlow_Backup_${currentDateStr}.json`, 'application/json');
 }
 
 function importJsonData(event) {
@@ -1536,6 +1606,7 @@ function importJsonData(event) {
       if (parsed.settings) appSettings = parsed.settings;
       saveAppData();
       saveSettings();
+      playSfx('check');
       alert('Data restored successfully!');
       refreshAllViews();
     } catch (err) {

@@ -1,13 +1,13 @@
 {
-  "name": "ChronoSense Time Audit",
-  "short_name": "ChronoSense",
-  "description": "Simple hourly time & habit audit. Fast multi-hour logging, multitasking audit, and zero clutter.",
-  "id": "/chronosense",
+  "name": "DayFlow - Habit & Time Flow",
+  "short_name": "DayFlow",
+  "description": "Effortless habit and time architecture. 5-hour daily focus quest, beautiful grids, and one-tap audits.",
+  "id": "/dayflow",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#090d16",
-  "theme_color": "#090d16",
+  "background_color": "#050811",
+  "theme_color": "#050811",
   "orientation": "portrait-primary",
   "icons": [
     {

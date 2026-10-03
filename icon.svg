@@ -1,26 +1,49 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0f172a" />
-      <stop offset="100%" stop-color="#1e293b" />
+    <!-- Deep Obsidian Luxury Background -->
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0f1d"/>
+      <stop offset="50%" stop-color="#050811"/>
+      <stop offset="100%" stop-color="#020408"/>
     </linearGradient>
-    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#10b981" />
-      <stop offset="100%" stop-color="#06b6d4" />
+
+    <!-- Radiant Emerald to Electric Cyan Flow -->
+    <linearGradient id="flowGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="50%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
     </linearGradient>
+
+    <linearGradient id="ringHighlight" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+
+    <!-- Luxury Glass Shadow -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
   </defs>
-  <rect width="512" height="512" rx="112" fill="url(#bgGrad)" />
-  <circle cx="256" cy="256" r="180" stroke="#334155" stroke-width="12" fill="none" />
-  <!-- Clock ticks -->
-  <line x1="256" y1="96" x2="256" y2="120" stroke="#94a3b8" stroke-width="8" stroke-linecap="round"/>
-  <line x1="416" y1="256" x2="392" y2="256" stroke="#94a3b8" stroke-width="8" stroke-linecap="round"/>
-  <line x1="256" y1="416" x2="256" y2="392" stroke="#94a3b8" stroke-width="8" stroke-linecap="round"/>
-  <line x1="96" y1="256" x2="120" stroke="#94a3b8" stroke-width="8" stroke-linecap="round"/>
-  <!-- Progress arc -->
-  <path d="M 256 100 A 156 156 0 0 1 390 334" fill="none" stroke="url(#accentGrad)" stroke-width="20" stroke-linecap="round"/>
-  <!-- Center elements: Hourglass & Target -->
-  <circle cx="256" cy="256" r="16" fill="#10b981" />
-  <line x1="256" y1="256" x2="256" y2="150" stroke="#f8fafc" stroke-width="10" stroke-linecap="round"/>
-  <line x1="256" y1="256" x2="330" y2="290" stroke="#38bdf8" stroke-width="8" stroke-linecap="round"/>
-  <circle cx="256" cy="256" r="6" fill="#0f172a" />
+
+  <!-- Squircle Base -->
+  <rect width="512" height="512" rx="128" fill="url(#bg)"/>
+  <rect width="510" height="510" x="1" y="1" rx="127" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2"/>
+
+  <!-- Minimalist Dynamic Flow Ring (Continuous Time & Habit Momentum) -->
+  <!-- Ambient Glow -->
+  <circle cx="256" cy="256" r="140" fill="none" stroke="url(#flowGlow)" stroke-width="28" opacity="0.3" filter="url(#glow)" />
+  
+  <!-- Outer Track -->
+  <circle cx="256" cy="256" r="140" fill="none" stroke="rgba(255,255,256,0.05)" stroke-width="24"/>
+
+  <!-- Glowing Momentum Arc -->
+  <path d="M 256 116 A 140 140 0 1 1 126 312" fill="none" stroke="url(#flowGlow)" stroke-width="26" stroke-linecap="round"/>
+
+  <!-- Core Zenith Dot -->
+  <circle cx="256" cy="116" r="15" fill="#ffffff" filter="url(#glow)"/>
+
+  <!-- Center Floating Spark (Focus Pivot) -->
+  <circle cx="256" cy="256" r="32" fill="url(#ringHighlight)"/>
+  <circle cx="256" cy="256" r="14" fill="#050811"/>
 </svg>

@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>ChronoSense | Habit & Time Planner</title>
+  <title>DayFlow | Habit & Time Flow</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#080c14">
+  <meta name="theme-color" content="#050811">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="icon" type="image/svg+xml" href="icon.svg">
@@ -20,30 +20,28 @@
         extend: {
           colors: {
             surface: {
-              950: '#070a10',
-              900: '#0c121d',
-              850: '#111928',
-              800: '#172236',
-              750: '#1e2b45',
-              700: '#263756',
-              600: '#33486e'
+              950: '#03050a',
+              900: '#070b14',
+              850: '#0d1322',
+              800: '#141d33',
+              750: '#1c2846',
+              700: '#25355c',
+              600: '#33487a'
             },
             accent: {
-              green: '#10b981',
+              emerald: '#10b981',
               cyan: '#06b6d4',
               blue: '#3b82f6',
               purple: '#8b5cf6',
               indigo: '#6366f1',
               amber: '#f59e0b',
               rose: '#f43f5e',
-              neon: '#22c55e'
             }
           },
           boxShadow: {
-            'glow-sm': '0 0 15px -3px rgba(16, 185, 129, 0.3)',
-            'glow-cyan': '0 0 15px -3px rgba(6, 182, 212, 0.3)',
-            'glow-indigo': '0 0 15px -3px rgba(99, 102, 241, 0.3)',
-            'glow-purple': '0 0 15px -3px rgba(139, 92, 246, 0.3)',
+            'glow-emerald': '0 0 20px -3px rgba(16, 185, 129, 0.35)',
+            'glow-cyan': '0 0 20px -3px rgba(6, 182, 212, 0.35)',
+            'glow-indigo': '0 0 20px -3px rgba(99, 102, 241, 0.35)',
           }
         }
       }
@@ -64,270 +62,307 @@
       -webkit-tap-highlight-color: transparent;
       user-select: none;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      touch-action: manipulation;
     }
-    .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1.25rem); }
-    .pt-safe { padding-top: env(safe-area-inset-top, 0.75rem); }
+    .pb-safe { padding-bottom: max(env(safe-area-inset-bottom, 1.25rem), 1.25rem); }
+    .pt-safe { padding-top: max(env(safe-area-inset-top, 0.75rem), 0.75rem); }
 
-    /* Hide scrollbars but keep scrolling */
+    /* Hide scrollbars smoothly */
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* Clean dot grid styles (Play Store style) */
+    /* Tactile button bounce */
+    .btn-press {
+      transition: transform 0.12s ease, opacity 0.12s ease;
+    }
+    .btn-press:active {
+      transform: scale(0.94);
+      opacity: 0.88;
+    }
+
+    /* 28-day grid dot */
     .grid-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 2px;
+      width: 9px;
+      height: 9px;
+      border-radius: 2.5px;
       transition: all 0.2s ease;
     }
   </style>
 </head>
-<body class="bg-surface-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-accent-green selection:text-white">
+<body class="bg-surface-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-accent-emerald selection:text-white">
 
-  <!-- TOP BAR: MINIMAL & SPACIOUS WITH WEEK NAVIGATION -->
-  <header class="sticky top-0 z-40 bg-surface-900/90 backdrop-blur-xl border-b border-surface-800/60 pt-safe px-4 py-2.5">
-    <div class="max-w-md mx-auto space-y-2">
+  <!-- TOP BAR: LUXURY MINIMALIST HEADER -->
+  <header class="sticky top-0 z-40 bg-surface-950/95 backdrop-blur-2xl border-b border-surface-850/80 pt-safe px-4 py-3">
+    <div class="max-w-md mx-auto space-y-3">
       
-      <!-- Row 1: Player Level & Gamification Header -->
+      <!-- Row 1: Brand & Sound & Today Jump -->
       <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-2">
-          <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 p-0.5 shadow-glow-sm">
-            <div class="w-full h-full bg-surface-950 rounded-[10px] flex items-center justify-center font-black text-xs text-emerald-400" id="playerLevelBadge">
-              L3
+        
+        <!-- Logo & Title -->
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-emerald-500 to-cyan-500 p-0.5 shadow-glow-emerald">
+            <div class="w-full h-full bg-surface-950 rounded-[14px] flex items-center justify-center">
+              <svg class="w-5 h-5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-opacity="0.2"/>
+                <path d="M12 4 A 8 8 0 1 1 5 16" stroke="currentColor" stroke-linecap="round"/>
+                <circle cx="12" cy="12" r="2.5" fill="currentColor"/>
+              </svg>
             </div>
           </div>
           <div>
-            <h1 class="text-xs font-black text-white tracking-wide" id="playerTitleText">Deep Work Knight</h1>
-            <p class="text-[10px] text-amber-400 font-bold" id="playerXpText">850 XP</p>
+            <div class="flex items-center gap-1.5">
+              <h1 class="text-sm font-black text-white tracking-tight">DayFlow</h1>
+              <span class="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/30" id="playerLevelBadge">L3</span>
+            </div>
+            <p class="text-xs text-amber-400/90 font-bold" id="playerTitleText">Deep Work Knight • <span id="playerXpText">850 XP</span></p>
           </div>
         </div>
 
-        <!-- Audio & Quick Actions -->
-        <div class="flex items-center space-x-1.5">
-          <button id="soundToggleBtn" class="p-1.5 rounded-xl bg-surface-850 hover:bg-surface-800 border border-surface-800 text-slate-400 hover:text-amber-400 transition" title="Sound Effects">
-            <i data-lucide="volume-2" class="w-4 h-4"></i>
+        <!-- Controls: Sound Toggle (Fixed Bug) & Today Jump -->
+        <div class="flex items-center space-x-2">
+          
+          <!-- Persistent Stable Sound Button -->
+          <button id="soundToggleBtn" type="button" class="btn-press flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl bg-surface-850 border border-surface-750 text-slate-300 font-bold text-xs" title="Toggle Sound Effects">
+            <span id="soundIconWrapper" class="text-emerald-400 flex items-center">
+              <i data-lucide="volume-2" class="w-4 h-4"></i>
+            </span>
+            <span id="soundStatusText" class="text-[11px] font-black text-emerald-400">ON</span>
           </button>
-          <button id="todayQuickBtn" class="px-2.5 py-1 text-xs font-bold text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-xl transition">
+
+          <!-- Today Button -->
+          <button id="todayQuickBtn" type="button" class="btn-press px-3 py-1.5 text-xs font-black text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl shadow-glow-emerald transition">
             Today
           </button>
         </div>
       </div>
 
-      <!-- Row 2: Week Switcher (< Previous Week | Oct 04 - Oct 10 | Next Week >) -->
-      <div class="flex items-center justify-between bg-surface-950/70 border border-surface-800/80 rounded-xl px-2 py-1 text-xs">
-        <button id="prevWeekBtn" class="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-surface-850 transition" title="Previous Week">
-          <i data-lucide="chevron-left" class="w-4 h-4 stroke-[2.5]"></i>
+      <!-- Row 2: Week Range & Infinite Navigation (< Previous Week | Oct 04 - Oct 10 | Next Week >) -->
+      <div class="flex items-center justify-between bg-surface-900/90 border border-surface-800 rounded-2xl px-3 py-1.5 text-xs">
+        <button id="prevWeekBtn" type="button" class="btn-press p-1 text-slate-400 hover:text-white rounded-lg transition" title="Previous Week">
+          <i data-lucide="chevron-left" class="w-5 h-5 stroke-[2.5]"></i>
         </button>
-        <div class="flex items-center gap-1.5">
-          <i data-lucide="calendar" class="w-3.5 h-3.5 text-indigo-400"></i>
+        
+        <div class="flex items-center gap-2">
+          <i data-lucide="calendar" class="w-4 h-4 text-indigo-400"></i>
           <span id="weekRangeLabel" class="font-black text-white text-xs tracking-wide">This Week</span>
         </div>
-        <button id="nextWeekBtn" class="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-surface-850 transition" title="Next Week">
-          <i data-lucide="chevron-right" class="w-4 h-4 stroke-[2.5]"></i>
+
+        <button id="nextWeekBtn" type="button" class="btn-press p-1 text-slate-400 hover:text-white rounded-lg transition" title="Next Week">
+          <i data-lucide="chevron-right" class="w-5 h-5 stroke-[2.5]"></i>
         </button>
       </div>
 
-      <!-- Row 3: HORIZONTAL WEEK CAPSULE BAR (Mon-Fri Weekdays vs Sat-Sun Weekends) -->
+      <!-- Row 3: Spacious 7-Day Capsule Strip -->
       <div class="flex items-center justify-between gap-1 overflow-x-auto no-scrollbar py-0.5" id="weekCapsuleBar">
-        <!-- Rendered dynamically by app.js (7 days with weekday/weekend indicators) -->
+        <!-- Rendered dynamically by app.js (Large, thumb-friendly capsules) -->
       </div>
     </div>
   </header>
 
-  <!-- MAIN SCROLLABLE CONTENT -->
-  <main class="flex-1 overflow-y-auto px-4 py-3 max-w-md mx-auto w-full pb-28 space-y-3.5">
+  <!-- MAIN VIEWPORT (SPACIOUS & EXPENSIVE AESTHETICS) -->
+  <main class="flex-1 overflow-y-auto px-4 py-3 max-w-md mx-auto w-full pb-32 space-y-4">
 
-    <!-- SELECTED DAY TYPE STATUS BAR (Workday / Weekend / Holiday / Rest) -->
-    <div class="bg-surface-900 border border-surface-800 rounded-2xl p-2.5 px-3 space-y-2 shadow-sm">
+    <!-- SELECTED DAY & 4-PILL MODE BAR -->
+    <div class="bg-surface-900 border border-surface-800 rounded-3xl p-3.5 space-y-2.5 shadow-sm">
       <div class="flex items-center justify-between">
-        <div class="flex items-center gap-1.5">
-          <span class="text-sm font-black text-white" id="selectedDayTitle">Saturday, Oct 3</span>
-          <span id="isTodayBadge" class="hidden text-[9px] font-black uppercase px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Today</span>
+        <div>
+          <h2 class="text-base font-black text-white leading-tight" id="selectedDayTitle">Saturday, Oct 3</h2>
+          <span id="isTodayBadge" class="hidden inline-block text-[10px] font-black uppercase text-emerald-400 mt-0.5">● Today</span>
         </div>
-        <span id="dayTypeBadge" class="text-[10px] font-black px-2 py-0.5 rounded-lg bg-surface-800 text-slate-300">Weekend</span>
+        <span id="dayTypeBadge" class="text-xs font-black px-2.5 py-1 rounded-xl bg-surface-800 text-slate-300">Weekend</span>
       </div>
 
-      <!-- 4-Pill Day Mode Switcher -->
-      <div class="grid grid-cols-4 gap-1 bg-surface-950 p-1 rounded-xl border border-surface-800/80" id="dayTypePillGroup">
-        <button type="button" data-type="workday" class="day-type-pill text-[10px] font-black py-1 rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center gap-1">
+      <!-- 4-Pill Switcher: Big, Tactile, Thumb-Friendly -->
+      <div class="grid grid-cols-4 gap-1.5 bg-surface-950 p-1.5 rounded-2xl border border-surface-800" id="dayTypePillGroup">
+        <button type="button" data-type="workday" class="day-type-pill btn-press text-xs font-black py-2 rounded-xl text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
           <span>💼</span> Work
         </button>
-        <button type="button" data-type="weekend" class="day-type-pill text-[10px] font-black py-1 rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center gap-1">
+        <button type="button" data-type="weekend" class="day-type-pill btn-press text-xs font-black py-2 rounded-xl text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
           <span>🌴</span> Wknd
         </button>
-        <button type="button" data-type="holiday" class="day-type-pill text-[10px] font-black py-1 rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center gap-1">
+        <button type="button" data-type="holiday" class="day-type-pill btn-press text-xs font-black py-2 rounded-xl text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
           <span>🏖️</span> PTO
         </button>
-        <button type="button" data-type="rest" class="day-type-pill text-[10px] font-black py-1 rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center gap-1">
+        <button type="button" data-type="rest" class="day-type-pill btn-press text-xs font-black py-2 rounded-xl text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
           <span>🎉</span> Rest
         </button>
       </div>
     </div>
 
-    <!-- HOLIDAY / REST STREAK PROTECTION CARD (Visible when Holiday or Rest selected) -->
-    <div id="holidayRestBanner" class="hidden rounded-2xl bg-indigo-500/10 border border-indigo-500/30 p-3 space-y-1.5 animate-in fade-in duration-200">
+    <!-- STREAK SHIELD BANNER (When Holiday or Rest is active) -->
+    <div id="holidayRestBanner" class="hidden rounded-3xl bg-indigo-500/10 border border-indigo-500/30 p-4 space-y-2 animate-in fade-in duration-200">
       <div class="flex items-center justify-between">
-        <span class="text-xs font-black text-indigo-300 flex items-center gap-1.5" id="holidayRestTitle">
-          🏖️ Holiday / PTO Mode Active
+        <span class="text-sm font-black text-indigo-300 flex items-center gap-2" id="holidayRestTitle">
+          🛡️ Streak Protection Shield Active
         </span>
-        <span class="text-[9px] font-black px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center gap-1">
-          <i data-lucide="shield-check" class="w-3 h-3"></i> Streaks Protected
+        <span class="text-xs font-black px-2 py-0.5 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+          Protected
         </span>
       </div>
-      <p class="text-[10px] text-slate-400 leading-tight" id="holidayRestSubtitle">
-        Enjoy your day off or function without stress! Your habit streaks are preserved and the daily 5-Hour Focus Quest is relaxed for today.
+      <p class="text-xs text-slate-300 leading-relaxed" id="holidayRestSubtitle">
+        Enjoy your day off or event with zero guilt! Your habit streaks are frozen and will not break.
       </p>
     </div>
 
-    <!-- VIEW 1: 📅 PLANNER TAB (Morning: Plan Your Day Like Teams / Google Meet) -->
-    <div id="viewPlanner" class="space-y-3.5">
+    <!-- ========================================== -->
+    <!-- VIEW 1: 📅 PLANNER TAB (Teams-Style Flow)   -->
+    <!-- ========================================== -->
+    <div id="viewPlanner" class="space-y-4">
       
-      <!-- WEEKLY BLUEPRINT BAR (Teams Style: Load Workday/Weekend or Entire Week) -->
-      <div class="rounded-2xl bg-surface-900 border border-surface-800 p-3 space-y-2.5 shadow-sm">
+      <!-- Weekly Blueprint Card (1-Tap Morning Setup) -->
+      <div class="rounded-3xl bg-surface-900 border border-surface-800 p-4 space-y-3 shadow-sm">
         <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
-              <i data-lucide="calendar" class="w-4 h-4"></i>
+          <div class="flex items-center gap-2.5">
+            <div class="w-10 h-10 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
+              <i data-lucide="layers" class="w-5 h-5"></i>
             </div>
             <div>
-              <h3 class="text-xs font-black text-white" id="blueprintTitle">Workday Blueprint (Teams Style)</h3>
-              <p class="text-[10px] text-slate-400 leading-tight" id="blueprintSubtitle">Office 2-6 PM • WFH 7-7:30 PM • 2h YouTube</p>
+              <h3 class="text-sm font-black text-white" id="blueprintTitle">Workday Blueprint (Teams Style)</h3>
+              <p class="text-xs text-slate-400" id="blueprintSubtitle">Office 2-6 PM • WFH 7-7:30 PM • 2h YouTube</p>
             </div>
           </div>
-          <button type="button" id="applyTodayBlueprintBtn" class="px-2.5 py-1.5 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 text-indigo-300 font-black rounded-xl text-[10px] flex items-center gap-1 transition shadow-glow-indigo">
-            <i data-lucide="zap" class="w-3 h-3"></i> Apply Today
-          </button>
         </div>
 
-        <div class="flex items-center justify-between pt-2 border-t border-surface-800/80 text-[10px]">
-          <span class="text-slate-500">Plan ahead without overthinking</span>
-          <button type="button" id="applyWeekBlueprintBtn" class="text-emerald-400 hover:text-emerald-300 font-black flex items-center gap-1 transition">
-            <i data-lucide="copy" class="w-3 h-3"></i> Apply to Whole Week (Mon-Fri)
+        <!-- Action Buttons: Large and Tactile -->
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <button type="button" id="applyTodayBlueprintBtn" class="btn-press py-2.5 px-3 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 text-indigo-300 font-black rounded-2xl text-xs flex items-center justify-center gap-1.5 transition shadow-glow-indigo">
+            <i data-lucide="zap" class="w-4 h-4"></i> Apply Today
+          </button>
+          <button type="button" id="applyWeekBlueprintBtn" class="btn-press py-2.5 px-3 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 font-black rounded-2xl text-xs flex items-center justify-center gap-1.5 transition">
+            <i data-lucide="copy" class="w-4 h-4"></i> Sync Mon–Fri
           </button>
         </div>
       </div>
 
-      <!-- Quick 1-Tap Routine & Teams Meeting Template Chips -->
-      <div class="space-y-1.5">
-        <div class="flex items-center justify-between">
-          <span class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Quick Template Blocks</span>
-          <button id="openPlanModalBtn" class="text-xs font-black text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
-            <i data-lucide="plus" class="w-3.5 h-3.5 stroke-[3]"></i> Custom Block
+      <!-- Quick 1-Tap Template Chips -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between px-1">
+          <span class="text-xs font-black uppercase text-slate-400 tracking-wider">Quick Template Blocks</span>
+          <button id="openPlanModalBtn" type="button" class="btn-press text-xs font-black text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i> Custom Block
           </button>
         </div>
-        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
-          <button type="button" data-tpl="teams" class="plan-tpl-btn shrink-0 px-2.5 py-1.5 rounded-xl bg-surface-850 hover:bg-surface-800 border border-indigo-500/30 text-indigo-300 text-xs font-bold transition flex items-center gap-1.5">
+
+        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+          <button type="button" data-tpl="teams" class="plan-tpl-btn btn-press shrink-0 px-3 py-2 rounded-2xl bg-surface-850 hover:bg-surface-800 border border-indigo-500/30 text-indigo-300 text-xs font-bold transition flex items-center gap-2">
             <span>👥</span> Teams Meeting (45m)
           </button>
-          <button type="button" data-tpl="office" class="plan-tpl-btn shrink-0 px-2.5 py-1.5 rounded-xl bg-surface-850 hover:bg-surface-800 border border-blue-500/30 text-blue-300 text-xs font-bold transition flex items-center gap-1.5">
+          <button type="button" data-tpl="office" class="plan-tpl-btn btn-press shrink-0 px-3 py-2 rounded-2xl bg-surface-850 hover:bg-surface-800 border border-blue-500/30 text-blue-300 text-xs font-bold transition flex items-center gap-2">
             <span>💼</span> 2-6 PM Office
           </button>
-          <button type="button" data-tpl="yt" class="plan-tpl-btn shrink-0 px-2.5 py-1.5 rounded-xl bg-surface-850 hover:bg-surface-800 border border-emerald-500/30 text-emerald-300 text-xs font-bold transition flex items-center gap-1.5">
+          <button type="button" data-tpl="yt" class="plan-tpl-btn btn-press shrink-0 px-3 py-2 rounded-2xl bg-surface-850 hover:bg-surface-800 border border-emerald-500/30 text-emerald-300 text-xs font-bold transition flex items-center gap-2">
             <span>📈</span> 2h YouTube Focus
           </button>
-          <button type="button" data-tpl="wfh" class="plan-tpl-btn shrink-0 px-2.5 py-1.5 rounded-xl bg-surface-850 hover:bg-surface-800 border border-purple-500/30 text-purple-300 text-xs font-bold transition flex items-center gap-1.5">
+          <button type="button" data-tpl="wfh" class="plan-tpl-btn btn-press shrink-0 px-3 py-2 rounded-2xl bg-surface-850 hover:bg-surface-800 border border-purple-500/30 text-purple-300 text-xs font-bold transition flex items-center gap-2">
             <span>💻</span> 7-7:30 PM WFH
           </button>
-          <button type="button" data-tpl="sleep" class="plan-tpl-btn shrink-0 px-2.5 py-1.5 rounded-xl bg-surface-850 hover:bg-surface-800 border border-indigo-500/30 text-indigo-300 text-xs font-bold transition flex items-center gap-1.5">
+          <button type="button" data-tpl="sleep" class="plan-tpl-btn btn-press shrink-0 px-3 py-2 rounded-2xl bg-surface-850 hover:bg-surface-800 border border-indigo-500/30 text-indigo-300 text-xs font-bold transition flex items-center gap-2">
             <span>😴</span> 11 PM Sleep (8h)
           </button>
         </div>
       </div>
 
       <!-- Planned Blocks List -->
-      <div class="space-y-1.5">
+      <div class="space-y-2">
         <div class="flex items-center justify-between text-xs text-slate-400 font-bold px-1">
           <span>Scheduled Timeline</span>
-          <span id="planTotalHoursBadge" class="text-indigo-400">0h planned</span>
+          <span id="planTotalHoursBadge" class="text-indigo-400 font-black">0.0h planned</span>
         </div>
-        <div id="plannerListContainer" class="space-y-2.5">
+        <div id="plannerListContainer" class="space-y-3">
           <!-- Rendered dynamically in app.js -->
         </div>
       </div>
     </div>
 
-    <!-- VIEW 2: ⏱️ TRACKER TAB (Evening 2-Minute Audit & Execution) -->
-    <div id="viewTracker" class="hidden space-y-3.5">
+    <!-- ========================================== -->
+    <!-- VIEW 2: ⏱️ TRACKER TAB (Evening Audit)      -->
+    <!-- ========================================== -->
+    <div id="viewTracker" class="hidden space-y-4">
       
-      <!-- HERO: COMPACT 5-HOUR CREATOR QUEST WIDGET -->
-      <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-surface-850 to-surface-900 border border-emerald-500/30 p-3.5 shadow-xl">
-        <div class="flex items-center justify-between gap-3">
-          <div class="space-y-1">
-            <span class="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-              <i data-lucide="target" class="w-3 h-3"></i> 5-Hour Focus Quest
+      <!-- HERO: 5-HOUR FOCUS QUEST WIDGET (Big Bold Numbers) -->
+      <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-surface-900 to-surface-850 border border-emerald-500/30 p-4 shadow-xl">
+        <div class="flex items-center justify-between gap-4">
+          <div class="space-y-1.5">
+            <span class="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+              <i data-lucide="target" class="w-3.5 h-3.5"></i> Daily 5-Hour Focus Quest
             </span>
-            <div class="flex items-baseline gap-1.5">
-              <span id="trackerFocusedHoursNumber" class="text-2xl font-black text-emerald-400">0.0</span>
-              <span class="text-xs font-bold text-slate-400" id="trackerGoalDenominatorText">/ 5.0h Goal</span>
+            <div class="flex items-baseline gap-2">
+              <span id="trackerFocusedHoursNumber" class="text-3xl font-black text-emerald-400 tracking-tight">0.0</span>
+              <span class="text-sm font-bold text-slate-400" id="trackerGoalDenominatorText">/ 5.0h Goal</span>
             </div>
-            <p class="text-[10px] text-slate-400" id="trackerQuestRemainingText">Hit 5 focused hours to unlock today's Trophy!</p>
+            <p class="text-xs text-slate-300 font-medium" id="trackerQuestRemainingText">Hit 5 focused hours to unlock today's Trophy!</p>
           </div>
 
           <!-- Circular Ring -->
-          <div class="relative w-14 h-14 shrink-0 flex items-center justify-center">
+          <div class="relative w-16 h-16 shrink-0 flex items-center justify-center">
             <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
               <path class="text-surface-800" stroke-width="3.5" stroke="currentColor" fill="none"
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
               <path id="trackerRingArc" class="text-emerald-400 transition-all duration-700 ease-out" stroke-dasharray="0, 100" stroke-width="3.5" stroke-linecap="round" stroke="currentColor" fill="none"
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
             </svg>
-            <span class="absolute text-xs font-black text-white" id="trackerPercentageText">0%</span>
+            <span class="absolute text-sm font-black text-white" id="trackerPercentageText">0%</span>
           </div>
         </div>
       </div>
 
-      <!-- PENDING PLANS REVIEW BANNER (The Evening 2-Minute Audit!) -->
-      <div id="pendingReviewBanner" class="hidden rounded-2xl bg-amber-500/10 border border-amber-500/30 p-3 space-y-2">
+      <!-- PENDING PLANS REVIEW (The Evening 2-Minute Audit!) -->
+      <div id="pendingReviewBanner" class="hidden rounded-3xl bg-amber-500/10 border border-amber-500/30 p-4 space-y-2.5">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-amber-300 flex items-center gap-1.5">
-            <i data-lucide="check-check" class="w-4 h-4 text-amber-400"></i>
+          <span class="text-sm font-bold text-amber-300 flex items-center gap-2">
+            <i data-lucide="check-check" class="w-5 h-5 text-amber-400"></i>
             <span id="pendingReviewCountText">3 Planned Blocks to Verify</span>
           </span>
-          <button id="confirmAllPendingBtn" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-surface-950 font-black rounded-lg text-[10px] transition">
+          <button id="confirmAllPendingBtn" type="button" class="btn-press px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-surface-950 font-black rounded-xl text-xs transition">
             Confirm All Done
           </button>
         </div>
-        <p class="text-[10px] text-slate-400 leading-tight">
-          Review what you actually did today. Completed blocks are permanently added to your audit ledger.
+        <p class="text-xs text-slate-300 leading-relaxed">
+          Review what actually happened today. Completed blocks are permanently added to your verified audit ledger.
         </p>
-        <div id="pendingReviewCardsList" class="space-y-1.5 pt-1">
+        <div id="pendingReviewCardsList" class="space-y-2 pt-1">
           <!-- Populated in JS -->
         </div>
       </div>
 
-      <!-- VERIFIED AUDIT TIMELINE (Clean vertical track like Calendar Screenshot) -->
+      <!-- VERIFIED AUDIT TIMELINE -->
       <div class="space-y-2">
         <div class="flex items-center justify-between text-xs text-slate-400 font-bold px-1">
-          <span>Verified Timeline Ledger</span>
-          <span id="statVerifiedTotalHours" class="text-emerald-400">0h logged</span>
+          <span>Verified Ledger</span>
+          <span id="statVerifiedTotalHours" class="text-emerald-400 font-black">0.0h logged</span>
         </div>
-        <div id="verifiedTimelineContainer" class="space-y-2">
+        <div id="verifiedTimelineContainer" class="space-y-3">
           <!-- Rendered in app.js -->
         </div>
       </div>
     </div>
 
-    <!-- VIEW 3: 🟩 BEAUTIFUL GRIDS & HABITS (Play Store "Beautiful Grids" UI) -->
-    <div id="viewGrids" class="hidden space-y-3.5">
-      <div class="flex items-center justify-between">
+    <!-- ========================================== -->
+    <!-- VIEW 3: 🟩 BEAUTIFUL GRIDS (Habit Streaks)   -->
+    <!-- ========================================== -->
+    <div id="viewGrids" class="hidden space-y-4">
+      <div class="flex items-center justify-between px-1">
         <div>
-          <h2 class="text-sm font-black text-white">Habit Grids</h2>
-          <p class="text-[11px] text-slate-400">Build streaks with visual consistency matrices.</p>
+          <h2 class="text-base font-black text-white">Habit Grids</h2>
+          <p class="text-xs text-slate-400">28-day visual momentum matrices.</p>
         </div>
-        <span class="text-xs font-bold text-amber-400" id="habitsCompletedCounter">0 / 5 Today</span>
+        <span class="text-xs font-black text-amber-400 bg-amber-500/15 border border-amber-500/30 px-2.5 py-1 rounded-xl" id="habitsCompletedCounter">0 / 5 Today</span>
       </div>
 
-      <!-- Habit Cards with mini dot grids -->
-      <div id="habitGridCardsContainer" class="space-y-2.5">
-        <!-- Rendered in app.js with Play Store aesthetics -->
+      <!-- Habit Cards with 28-day dot grids -->
+      <div id="habitGridCardsContainer" class="space-y-3">
+        <!-- Rendered in app.js -->
       </div>
     </div>
 
-    <!-- VIEW 4: 📊 STATS & EXPENSE AUDIT -->
-    <div id="viewStats" class="hidden space-y-3.5">
+    <!-- ========================================== -->
+    <!-- VIEW 4: 📊 STATS & TIME EXPENSE AUDIT       -->
+    <!-- ========================================== -->
+    <div id="viewStats" class="hidden space-y-4">
       <!-- Donut Chart -->
-      <div class="bg-surface-900 rounded-2xl p-4 border border-surface-800 shadow-md">
-        <h3 class="text-xs font-black uppercase tracking-wider text-slate-300 mb-2 flex items-center gap-1.5">
-          <i data-lucide="pie-chart" class="w-3.5 h-3.5 text-emerald-400"></i> Time Expenditure
+      <div class="bg-surface-900 rounded-3xl p-4 border border-surface-800 shadow-sm">
+        <h3 class="text-xs font-black uppercase tracking-wider text-slate-300 mb-2 flex items-center gap-2">
+          <i data-lucide="pie-chart" class="w-4 h-4 text-emerald-400"></i> Time Expenditure
         </h3>
         <div class="relative h-48 flex items-center justify-center">
           <canvas id="categoryDonutChart"></canvas>
@@ -335,286 +370,286 @@
       </div>
 
       <!-- Focus Quality Audit -->
-      <div class="bg-surface-900 rounded-2xl p-4 border border-surface-800 shadow-md space-y-2.5 text-xs">
-        <h3 class="text-xs font-black uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-          <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-400"></i> Focus Quality (Multitask Audit)
+      <div class="bg-surface-900 rounded-3xl p-4 border border-surface-800 shadow-sm space-y-3 text-xs">
+        <h3 class="text-xs font-black uppercase tracking-wider text-slate-300 flex items-center gap-2">
+          <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i> Focus Quality (Multitask Audit)
         </h3>
         
-        <div>
-          <div class="flex justify-between font-bold mb-1">
+        <div class="space-y-1">
+          <div class="flex justify-between font-bold text-xs">
             <span class="text-emerald-400">Deep Single Focus</span>
             <span id="gaugeDeepFocusVal" class="text-white">0h (0%)</span>
           </div>
-          <div class="h-2 w-full bg-surface-800 rounded-full overflow-hidden">
+          <div class="h-2.5 w-full bg-surface-800 rounded-full overflow-hidden">
             <div id="gaugeDeepFocusBar" class="h-full bg-emerald-500 transition-all duration-500" style="width: 0%"></div>
           </div>
         </div>
 
-        <div>
-          <div class="flex justify-between font-bold mb-1">
+        <div class="space-y-1">
+          <div class="flex justify-between font-bold text-xs">
             <span class="text-amber-400">Multitask / Background Movie</span>
             <span id="gaugeMultitaskVal" class="text-white">0h (0%)</span>
           </div>
-          <div class="h-2 w-full bg-surface-800 rounded-full overflow-hidden">
+          <div class="h-2.5 w-full bg-surface-800 rounded-full overflow-hidden">
             <div id="gaugeMultitaskBar" class="h-full bg-amber-500 transition-all duration-500" style="width: 0%"></div>
           </div>
         </div>
 
-        <div>
-          <div class="flex justify-between font-bold mb-1">
+        <div class="space-y-1">
+          <div class="flex justify-between font-bold text-xs">
             <span class="text-rose-400">Time Leaks (Q4)</span>
             <span id="gaugeLeakVal" class="text-white">0h (0%)</span>
           </div>
-          <div class="h-2 w-full bg-surface-800 rounded-full overflow-hidden">
+          <div class="h-2.5 w-full bg-surface-800 rounded-full overflow-hidden">
             <div id="gaugeLeakBar" class="h-full bg-rose-500 transition-all duration-500" style="width: 0%"></div>
           </div>
         </div>
       </div>
 
       <!-- Eisenhower 4 Quadrants -->
-      <div class="grid grid-cols-2 gap-2 text-xs">
-        <div class="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20">
-          <div class="flex justify-between font-black text-blue-400 mb-0.5">
-            <span>Q1: Urgent/Imp</span>
+      <div class="grid grid-cols-2 gap-2.5">
+        <div class="p-3 rounded-2xl bg-blue-500/10 border border-blue-500/20">
+          <div class="flex justify-between font-black text-blue-400 text-xs mb-0.5">
+            <span>Q1: Urgent</span>
             <span id="eisenhowerQ1Val">0h</span>
           </div>
-          <p class="text-[9px] text-slate-400">Office & Meetings</p>
+          <p class="text-[11px] text-slate-400">Office & Meetings</p>
         </div>
-        <div class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
-          <div class="flex justify-between font-black text-emerald-400 mb-0.5">
+        <div class="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30">
+          <div class="flex justify-between font-black text-emerald-400 text-xs mb-0.5">
             <span>Q2: Growth</span>
             <span id="eisenhowerQ2Val">0h</span>
           </div>
-          <p class="text-[9px] text-slate-400">YouTube, AI, Learning</p>
+          <p class="text-[11px] text-slate-400">YouTube, AI, Learning</p>
         </div>
-        <div class="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
-          <div class="flex justify-between font-black text-amber-400 mb-0.5">
+        <div class="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20">
+          <div class="flex justify-between font-black text-amber-400 text-xs mb-0.5">
             <span>Q3: Routine</span>
             <span id="eisenhowerQ3Val">0h</span>
           </div>
-          <p class="text-[9px] text-slate-400">Chores & Errands</p>
+          <p class="text-[11px] text-slate-400">Chores & Errands</p>
         </div>
-        <div class="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30">
-          <div class="flex justify-between font-black text-rose-400 mb-0.5">
+        <div class="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30">
+          <div class="flex justify-between font-black text-rose-400 text-xs mb-0.5">
             <span>Q4: Waste</span>
             <span id="eisenhowerQ4Val">0h</span>
           </div>
-          <p class="text-[9px] text-slate-400">Mindless Bingeing</p>
+          <p class="text-[11px] text-slate-400">Mindless Bingeing</p>
         </div>
       </div>
     </div>
 
-    <!-- VIEW 5: ⚙️ SETTINGS & EXPORT -->
-    <div id="viewSettings" class="hidden space-y-3.5 text-xs">
-      <div class="bg-surface-900 rounded-2xl p-4 border border-surface-800 shadow-md space-y-2.5">
-        <h3 class="text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5">
-          <i data-lucide="download" class="w-3.5 h-3.5 text-emerald-400"></i> Backup & Data Ownership
+    <!-- ========================================== -->
+    <!-- VIEW 5: ⚙️ SETTINGS & BACKUP               -->
+    <!-- ========================================== -->
+    <div id="viewSettings" class="hidden space-y-4 text-xs">
+      <div class="bg-surface-900 rounded-3xl p-4 border border-surface-800 shadow-sm space-y-3">
+        <h3 class="text-xs font-black uppercase tracking-wider text-white flex items-center gap-2">
+          <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> Backup & Data Ownership
         </h3>
-        <button id="exportCsvBtn" class="w-full py-2.5 px-3 bg-surface-850 hover:bg-surface-800 border border-surface-800 text-slate-200 rounded-xl font-bold flex items-center justify-between transition">
-          <span class="flex items-center gap-2">
-            <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-400"></i> Export to Excel (CSV)
+        <button id="exportCsvBtn" type="button" class="btn-press w-full py-3 px-4 bg-surface-850 hover:bg-surface-800 border border-surface-800 text-slate-200 rounded-2xl font-bold flex items-center justify-between transition">
+          <span class="flex items-center gap-2.5">
+            <i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-400"></i> Export to Excel (CSV)
           </span>
           <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
         </button>
-        <button id="backupJsonBtn" class="w-full py-2.5 px-3 bg-surface-850 hover:bg-surface-800 border border-surface-800 text-slate-200 rounded-xl font-bold flex items-center justify-between transition">
-          <span class="flex items-center gap-2">
-            <i data-lucide="database" class="w-4 h-4 text-cyan-400"></i> Full Backup (JSON)
+        <button id="backupJsonBtn" type="button" class="btn-press w-full py-3 px-4 bg-surface-850 hover:bg-surface-800 border border-surface-800 text-slate-200 rounded-2xl font-bold flex items-center justify-between transition">
+          <span class="flex items-center gap-2.5">
+            <i data-lucide="database" class="w-5 h-5 text-cyan-400"></i> Full Backup (JSON)
           </span>
           <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
         </button>
-        <label class="w-full py-2.5 px-3 bg-surface-850 hover:bg-surface-800 border border-surface-800 text-slate-200 rounded-xl font-bold flex items-center justify-between transition cursor-pointer">
-          <span class="flex items-center gap-2">
-            <i data-lucide="upload" class="w-4 h-4 text-purple-400"></i> Restore Backup
+        <label class="btn-press w-full py-3 px-4 bg-surface-850 hover:bg-surface-800 border border-surface-800 text-slate-200 rounded-2xl font-bold flex items-center justify-between transition cursor-pointer">
+          <span class="flex items-center gap-2.5">
+            <i data-lucide="upload" class="w-5 h-5 text-purple-400"></i> Restore Backup
           </span>
           <input type="file" id="importJsonInput" accept=".json" class="hidden">
           <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
         </label>
       </div>
 
-      <div class="bg-surface-900 rounded-2xl p-4 border border-surface-800 shadow-md space-y-2">
-        <button id="loadSampleDataBtn" class="w-full py-2 px-3 bg-surface-850 hover:bg-surface-800 border border-surface-800 text-slate-300 rounded-xl font-semibold flex items-center justify-center gap-1.5 transition">
-          <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-amber-400"></i> Reset Demo Day
+      <div class="bg-surface-900 rounded-3xl p-4 border border-surface-800 shadow-sm space-y-2.5">
+        <button id="loadSampleDataBtn" type="button" class="btn-press w-full py-2.5 px-4 bg-surface-850 hover:bg-surface-800 border border-surface-800 text-slate-300 rounded-2xl font-semibold flex items-center justify-center gap-2 transition">
+          <i data-lucide="refresh-cw" class="w-4 h-4 text-amber-400"></i> Reset Demo Day
         </button>
-        <button id="clearTodayBtn" class="w-full py-2 px-3 bg-surface-850 hover:bg-rose-500/10 border border-surface-800 text-rose-400 rounded-xl font-semibold flex items-center justify-center gap-1.5 transition">
-          <i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-400"></i> Clear Today's Data
+        <button id="clearTodayBtn" type="button" class="btn-press w-full py-2.5 px-4 bg-surface-850 hover:bg-rose-500/10 border border-surface-800 text-rose-400 rounded-2xl font-semibold flex items-center justify-center gap-2 transition">
+          <i data-lucide="trash-2" class="w-4 h-4 text-rose-400"></i> Clear Today's Data
         </button>
       </div>
     </div>
 
   </main>
 
-  <!-- FLOATING PLUS BUTTON (Opens Add Modal) -->
-  <button id="floatingPlusBtn" class="fixed right-5 bottom-20 z-30 w-12 h-12 bg-gradient-to-r from-emerald-500 to-cyan-500 text-surface-950 font-black rounded-2xl shadow-xl shadow-emerald-500/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-all">
-    <i data-lucide="plus" class="w-6 h-6 stroke-[3]"></i>
+  <!-- FLOATING PLUS BUTTON (Large, Thumb-Friendly, Bottom Right) -->
+  <button id="floatingPlusBtn" type="button" class="btn-press fixed right-5 bottom-24 z-30 w-14 h-14 bg-gradient-to-r from-emerald-500 to-cyan-500 text-surface-950 font-black rounded-3xl shadow-xl shadow-emerald-500/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-all">
+    <i data-lucide="plus" class="w-7 h-7 stroke-[3]"></i>
   </button>
 
-  <!-- BOTTOM FIXED NAVIGATION TABS -->
-  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-surface-900/95 backdrop-blur-xl border-t border-surface-800/80 pb-safe shadow-2xl">
-    <div class="max-w-md mx-auto grid grid-cols-5 px-1 py-1 text-center">
-      <button id="navTabPlanner" class="flex flex-col items-center py-1.5 text-emerald-400 font-bold transition">
-        <i data-lucide="calendar-plus" class="w-4 h-4 mb-0.5"></i>
-        <span class="text-[9px]">Planner</span>
+  <!-- BOTTOM FIXED ONE-HANDED NAVIGATION TABS -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-surface-950/95 backdrop-blur-2xl border-t border-surface-850/80 pb-safe shadow-2xl">
+    <div class="max-w-md mx-auto grid grid-cols-5 px-2 py-2 text-center">
+      <button id="navTabPlanner" type="button" class="btn-press flex flex-col items-center py-2 text-emerald-400 font-bold transition">
+        <i data-lucide="calendar-plus" class="w-5 h-5 mb-1"></i>
+        <span class="text-[11px] font-black">Planner</span>
       </button>
 
-      <button id="navTabTracker" class="flex flex-col items-center py-1.5 text-slate-400 hover:text-white transition">
-        <i data-lucide="check-circle" class="w-4 h-4 mb-0.5"></i>
-        <span class="text-[9px]">Tracker</span>
+      <button id="navTabTracker" type="button" class="btn-press flex flex-col items-center py-2 text-slate-400 hover:text-white transition">
+        <i data-lucide="check-circle" class="w-5 h-5 mb-1"></i>
+        <span class="text-[11px] font-black">Tracker</span>
       </button>
 
-      <button id="navTabGrids" class="flex flex-col items-center py-1.5 text-slate-400 hover:text-white transition">
-        <i data-lucide="grid" class="w-4 h-4 mb-0.5"></i>
-        <span class="text-[9px]">Grids</span>
+      <button id="navTabGrids" type="button" class="btn-press flex flex-col items-center py-2 text-slate-400 hover:text-white transition">
+        <i data-lucide="grid" class="w-5 h-5 mb-1"></i>
+        <span class="text-[11px] font-black">Grids</span>
       </button>
 
-      <button id="navTabStats" class="flex flex-col items-center py-1.5 text-slate-400 hover:text-white transition">
-        <i data-lucide="bar-chart-2" class="w-4 h-4 mb-0.5"></i>
-        <span class="text-[9px]">Stats</span>
+      <button id="navTabStats" type="button" class="btn-press flex flex-col items-center py-2 text-slate-400 hover:text-white transition">
+        <i data-lucide="bar-chart-2" class="w-5 h-5 mb-1"></i>
+        <span class="text-[11px] font-black">Stats</span>
       </button>
 
-      <button id="navTabSettings" class="flex flex-col items-center py-1.5 text-slate-400 hover:text-white transition">
-        <i data-lucide="settings" class="w-4 h-4 mb-0.5"></i>
-        <span class="text-[9px]">Settings</span>
+      <button id="navTabSettings" type="button" class="btn-press flex flex-col items-center py-2 text-slate-400 hover:text-white transition">
+        <i data-lucide="settings" class="w-5 h-5 mb-1"></i>
+        <span class="text-[11px] font-black">Settings</span>
       </button>
     </div>
   </nav>
 
-  <!-- CLEAN LOG / PLAN POPUP BOTTOM SHEET -->
-  <div id="entryModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-surface-900 w-full max-w-md rounded-t-3xl sm:rounded-2xl border border-surface-800 shadow-2xl max-h-[92vh] flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-200">
+  <!-- ONE-HANDED BOTTOM SHEET MODAL (Thumb Reachable) -->
+  <div id="entryModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-end justify-center p-0 sm:p-4">
+    <div class="bg-surface-900 w-full max-w-md rounded-t-[32px] sm:rounded-3xl border border-surface-800 shadow-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-200">
       
       <!-- Modal Header -->
-      <div class="px-5 py-3 border-b border-surface-800 flex items-center justify-between bg-surface-850">
+      <div class="px-6 py-4 border-b border-surface-800 flex items-center justify-between bg-surface-850">
         <div>
-          <h3 class="text-sm font-black text-white" id="modalTitle">Add Schedule Block</h3>
-          <p class="text-[11px] text-slate-400 font-semibold" id="modalSpanSummary">02:00 PM - 06:00 PM (4h)</p>
+          <h3 class="text-base font-black text-white" id="modalTitle">Schedule Block</h3>
+          <p class="text-xs text-slate-400 font-semibold mt-0.5" id="modalSpanSummary">02:00 PM - 06:00 PM (4h)</p>
         </div>
-        <button id="closeEntryModalBtn" class="p-1.5 text-slate-400 hover:text-white rounded-lg transition">
-          <i data-lucide="x" class="w-5 h-5"></i>
+        <button id="closeEntryModalBtn" type="button" class="btn-press p-2 text-slate-400 hover:text-white rounded-xl transition">
+          <i data-lucide="x" class="w-6 h-6"></i>
         </button>
       </div>
 
-      <!-- Modal Body (Spacious & Clean, Zero Messy Walls of Text) -->
-      <div class="p-5 overflow-y-auto space-y-3.5 text-xs">
+      <!-- Modal Body (Spacious, No Clutter, Big Touch Targets) -->
+      <div class="p-6 overflow-y-auto space-y-4 text-xs">
         
-        <!-- Mode Switch: Plan For Later vs Log Directly Now -->
-        <div class="grid grid-cols-2 gap-1.5 bg-surface-950 p-1 rounded-xl border border-surface-800">
-          <button type="button" id="modalModePlanBtn" class="py-1.5 text-xs font-black rounded-lg bg-surface-800 text-emerald-400 shadow transition">
+        <!-- Mode Switch: Plan vs Direct -->
+        <div class="grid grid-cols-2 gap-2 bg-surface-950 p-1.5 rounded-2xl border border-surface-800">
+          <button type="button" id="modalModePlanBtn" class="btn-press py-2 text-xs font-black rounded-xl bg-surface-800 text-emerald-400 shadow transition">
             📅 Add to Plan
           </button>
-          <button type="button" id="modalModeDirectBtn" class="py-1.5 text-xs font-black rounded-lg text-slate-400 hover:text-white transition">
+          <button type="button" id="modalModeDirectBtn" class="btn-press py-2 text-xs font-black rounded-xl text-slate-400 hover:text-white transition">
             ⏱️ Log Directly
           </button>
         </div>
 
         <!-- Start Time -->
-        <div class="flex items-center justify-between bg-surface-850 p-2.5 rounded-xl border border-surface-800">
-          <span class="text-slate-300 font-bold flex items-center gap-1.5">
-            <i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-400"></i> Start Time:
+        <div class="flex items-center justify-between bg-surface-850 p-3.5 rounded-2xl border border-surface-800">
+          <span class="text-slate-200 font-bold text-xs flex items-center gap-2">
+            <i data-lucide="clock" class="w-4 h-4 text-emerald-400"></i> Start Time:
           </span>
-          <select id="modalStartHourSelect" class="bg-surface-800 border border-surface-700 text-white rounded-lg px-2.5 py-1 font-black focus:outline-none">
+          <select id="modalStartHourSelect" class="bg-surface-800 border border-surface-700 text-white rounded-xl px-3 py-1.5 font-black text-xs focus:outline-none">
             <!-- Populated in JS -->
           </select>
         </div>
 
-        <!-- Duration Selector -->
-        <div class="bg-surface-850 p-3 rounded-xl border border-surface-800 space-y-2">
-          <span class="text-[10px] font-black text-slate-300 uppercase tracking-wider flex items-center gap-1">
-            <i data-lucide="timer" class="w-3 h-3 text-cyan-400"></i> Duration
+        <!-- Duration Selector: Large Touch Targets -->
+        <div class="bg-surface-850 p-3.5 rounded-2xl border border-surface-800 space-y-2.5">
+          <span class="text-xs font-black text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="timer" class="w-3.5 h-3.5 text-cyan-400"></i> Duration
           </span>
-          <div class="grid grid-cols-4 gap-1.5" id="modalDurBtns">
-            <button type="button" data-mins="30" class="dur-btn py-1 px-1 rounded-lg bg-surface-800 hover:bg-surface-700 text-slate-300 text-center font-bold border border-surface-700 transition">30m</button>
-            <button type="button" data-mins="45" class="dur-btn py-1 px-1 rounded-lg bg-surface-800 hover:bg-surface-700 text-indigo-300 text-center font-bold border border-indigo-500/30 transition">45m (Meeting)</button>
-            <button type="button" data-mins="60" class="dur-btn py-1 px-1 rounded-lg bg-surface-800 hover:bg-surface-700 text-slate-300 text-center font-bold border border-surface-700 transition">1 Hour</button>
-            <button type="button" data-mins="120" class="dur-btn py-1 px-1 rounded-lg bg-surface-800 hover:bg-surface-700 text-slate-300 text-center font-bold border border-surface-700 transition">2 Hours</button>
-            <button type="button" data-mins="240" class="dur-btn py-1 px-1 rounded-lg bg-emerald-500/20 text-emerald-400 text-center font-black border border-emerald-500/40 transition">4 Hours</button>
-            <button type="button" data-mins="420" class="dur-btn py-1 px-1 rounded-lg bg-surface-800 hover:bg-surface-700 text-indigo-300 text-center font-bold border border-indigo-500/30 transition">7h Sleep</button>
-            <button type="button" data-mins="480" class="dur-btn py-1 px-1 rounded-lg bg-surface-800 hover:bg-surface-700 text-indigo-300 text-center font-bold border border-indigo-500/30 transition">8h Sleep</button>
-            <button type="button" data-mins="custom" class="dur-btn py-1 px-1 rounded-lg bg-surface-800 hover:bg-surface-700 text-slate-300 text-center font-bold border border-surface-700 transition flex items-center justify-center gap-1">
-              Custom
-            </button>
+          <div class="grid grid-cols-4 gap-2" id="modalDurBtns">
+            <button type="button" data-mins="30" class="dur-btn btn-press py-2 rounded-xl bg-surface-800 text-slate-300 text-center font-bold border border-surface-750 transition">30m</button>
+            <button type="button" data-mins="45" class="dur-btn btn-press py-2 rounded-xl bg-surface-800 text-indigo-300 text-center font-bold border border-indigo-500/30 transition">45m</button>
+            <button type="button" data-mins="60" class="dur-btn btn-press py-2 rounded-xl bg-surface-800 text-slate-300 text-center font-bold border border-surface-750 transition">1h</button>
+            <button type="button" data-mins="120" class="dur-btn btn-press py-2 rounded-xl bg-surface-800 text-slate-300 text-center font-bold border border-surface-750 transition">2h</button>
+            <button type="button" data-mins="240" class="dur-btn btn-press py-2 rounded-xl bg-emerald-500/20 text-emerald-400 text-center font-black border border-emerald-500/40 transition">4 Hours</button>
+            <button type="button" data-mins="420" class="dur-btn btn-press py-2 rounded-xl bg-surface-800 text-indigo-300 text-center font-bold border border-indigo-500/30 transition">7h Sleep</button>
+            <button type="button" data-mins="480" class="dur-btn btn-press py-2 rounded-xl bg-surface-800 text-indigo-300 text-center font-bold border border-indigo-500/30 transition">8h Sleep</button>
+            <button type="button" data-mins="custom" class="dur-btn btn-press py-2 rounded-xl bg-surface-800 text-slate-300 text-center font-bold border border-surface-750 transition">Custom</button>
           </div>
 
-          <div id="customDurationRow" class="hidden pt-1.5 flex items-center justify-between border-t border-surface-800">
-            <span class="text-[11px] font-bold text-slate-400">Custom Duration:</span>
+          <div id="customDurationRow" class="hidden pt-2 flex items-center justify-between border-t border-surface-800">
+            <span class="text-xs font-bold text-slate-400">Custom Duration:</span>
             <div class="flex items-center gap-2">
               <div class="flex items-center gap-1">
-                <input type="number" id="customHoursInput" min="0" max="24" value="4" class="w-14 bg-surface-800 border border-surface-700 rounded-lg px-2 py-1 text-right text-emerald-400 font-black focus:outline-none">
-                <span class="text-slate-400 font-bold text-[10px]">hrs</span>
+                <input type="number" id="customHoursInput" min="0" max="24" value="4" class="w-16 bg-surface-800 border border-surface-700 rounded-xl px-2 py-1.5 text-right text-emerald-400 font-black text-xs focus:outline-none">
+                <span class="text-slate-400 font-bold text-xs">hrs</span>
               </div>
               <div class="flex items-center gap-1">
-                <input type="number" id="customMinsInput" min="0" max="45" step="15" value="0" class="w-14 bg-surface-800 border border-surface-700 rounded-lg px-2 py-1 text-right text-emerald-400 font-black focus:outline-none">
-                <span class="text-slate-400 font-bold text-[10px]">min</span>
+                <input type="number" id="customMinsInput" min="0" max="45" step="15" value="0" class="w-16 bg-surface-800 border border-surface-700 rounded-xl px-2 py-1.5 text-right text-emerald-400 font-black text-xs focus:outline-none">
+                <span class="text-slate-400 font-bold text-xs">min</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 1-Tap Colorful Activity Presets -->
-        <div class="space-y-1.5">
-          <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Select Activity</span>
-          <div class="grid grid-cols-2 gap-2" id="modalPresetGrid">
+        <!-- 1-Tap Activity Presets -->
+        <div class="space-y-2">
+          <span class="text-xs font-black text-slate-400 uppercase tracking-wider">Select Activity</span>
+          <div class="grid grid-cols-2 gap-2.5" id="modalPresetGrid">
             
-            <button type="button" data-preset="Teams Meeting / Client Sync" data-cat="meeting" data-eis="q1" data-dur="45" class="preset-tile p-2.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-left transition flex items-center gap-2.5">
-              <span class="text-lg">👥</span>
+            <button type="button" data-preset="Teams Meeting / Client Sync" data-cat="meeting" data-eis="q1" data-dur="45" class="preset-tile btn-press p-3 rounded-2xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-left transition flex items-center gap-3">
+              <span class="text-xl">👥</span>
               <div>
                 <p class="font-bold text-indigo-300 text-xs">Teams Meeting</p>
-                <p class="text-[10px] text-indigo-400/80">Sync / Client Call</p>
+                <p class="text-[11px] text-indigo-400/80">Sync / Client Call</p>
               </div>
             </button>
 
-            <button type="button" data-preset="Office Work (Core Duties)" data-cat="maintenance" data-eis="q1" data-dur="240" class="preset-tile p-2.5 rounded-xl bg-surface-850 hover:bg-surface-800 border border-blue-500/30 text-left transition flex items-center gap-2.5">
-              <span class="text-lg">💼</span>
+            <button type="button" data-preset="Office Work (Core Duties)" data-cat="maintenance" data-eis="q1" data-dur="240" class="preset-tile btn-press p-3 rounded-2xl bg-surface-850 hover:bg-surface-800 border border-blue-500/30 text-left transition flex items-center gap-3">
+              <span class="text-xl">💼</span>
               <div>
                 <p class="font-bold text-white text-xs">Office Work</p>
-                <p class="text-[10px] text-slate-400">Day Job Shift</p>
+                <p class="text-[11px] text-slate-400">Day Job Shift</p>
               </div>
             </button>
 
-            <button type="button" data-preset="Office Work + Background Movie" data-cat="maintenance" data-eis="q1" data-multi="true" data-dist="Movie on personal PC" class="preset-tile p-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/30 text-left transition flex items-center gap-2.5">
-              <span class="text-lg">⚠️</span>
+            <button type="button" data-preset="Office Work + Background Movie" data-cat="maintenance" data-eis="q1" data-multi="true" data-dist="Movie on personal PC" class="preset-tile btn-press p-3 rounded-2xl bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/30 text-left transition flex items-center gap-3">
+              <span class="text-xl">⚠️</span>
               <div>
                 <p class="font-bold text-amber-300 text-xs">Work + Movie</p>
-                <p class="text-[10px] text-amber-400/80">Multitask Leak</p>
+                <p class="text-[11px] text-amber-400/80">Multitask Leak</p>
               </div>
             </button>
 
-            <button type="button" data-preset="YouTube Finance Automation" data-cat="investment" data-eis="q2" data-dur="120" class="preset-tile p-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/30 text-left transition flex items-center gap-2.5">
-              <span class="text-lg">📈</span>
+            <button type="button" data-preset="YouTube Finance Automation" data-cat="investment" data-eis="q2" data-dur="120" class="preset-tile btn-press p-3 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/30 text-left transition flex items-center gap-3">
+              <span class="text-xl">📈</span>
               <div>
                 <p class="font-bold text-emerald-300 text-xs">YouTube / AI</p>
-                <p class="text-[10px] text-emerald-400/80">Q2 Focus Quest</p>
+                <p class="text-[11px] text-emerald-400/80">Q2 Focus Quest</p>
               </div>
             </button>
 
-            <button type="button" data-preset="Night Sleep & Recovery" data-cat="sleep" data-eis="q2" data-dur="480" class="preset-tile p-2.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/15 border border-indigo-500/30 text-left transition flex items-center gap-2.5">
-              <span class="text-lg">😴</span>
+            <button type="button" data-preset="Night Sleep & Recovery" data-cat="sleep" data-eis="q2" data-dur="480" class="preset-tile btn-press p-3 rounded-2xl bg-indigo-500/10 hover:bg-indigo-500/15 border border-indigo-500/30 text-left transition flex items-center gap-3">
+              <span class="text-xl">😴</span>
               <div>
                 <p class="font-bold text-indigo-300 text-xs">Night Sleep</p>
-                <p class="text-[10px] text-indigo-400/80">8h Full Recharge</p>
+                <p class="text-[11px] text-indigo-400/80">8h Full Recharge</p>
               </div>
             </button>
 
-            <button type="button" data-preset="Meal / Tea Break Refresh" data-cat="routine" data-eis="q3" data-dur="30" class="preset-tile p-2.5 rounded-xl bg-surface-850 hover:bg-surface-800 border border-surface-700 text-left transition flex items-center gap-2.5">
-              <span class="text-lg">☕</span>
+            <button type="button" data-preset="Meal / Tea Break Refresh" data-cat="routine" data-eis="q3" data-dur="30" class="preset-tile btn-press p-3 rounded-2xl bg-surface-850 hover:bg-surface-800 border border-surface-700 text-left transition flex items-center gap-3">
+              <span class="text-xl">☕</span>
               <div>
                 <p class="font-bold text-slate-200 text-xs">Tea / Meal</p>
-                <p class="text-[10px] text-slate-400">Recharge</p>
+                <p class="text-[11px] text-slate-400">Recharge</p>
               </div>
             </button>
 
-            <button type="button" data-preset="Family Call / Real Talk" data-cat="rest" data-eis="q2" data-dur="60" class="preset-tile p-2.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/15 border border-purple-500/30 text-left transition flex items-center gap-2.5">
-              <span class="text-lg">🗣️</span>
+            <button type="button" data-preset="Family Call / Real Talk" data-cat="rest" data-eis="q2" data-dur="60" class="preset-tile btn-press p-3 rounded-2xl bg-purple-500/10 hover:bg-purple-500/15 border border-purple-500/30 text-left transition flex items-center gap-3">
+              <span class="text-xl">🗣️</span>
               <div>
                 <p class="font-bold text-purple-300 text-xs">Family Talk</p>
-                <p class="text-[10px] text-purple-400/80">Mother / Friends</p>
+                <p class="text-[11px] text-purple-400/80">Mother / Friends</p>
               </div>
             </button>
 
-            <button type="button" data-preset="Family Function / Full Rest" data-cat="rest" data-eis="q2" data-dur="240" class="preset-tile p-2.5 rounded-xl bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/30 text-left transition flex items-center gap-2.5">
-              <span class="text-lg">🎉</span>
+            <button type="button" data-preset="Family Function / Full Rest" data-cat="rest" data-eis="q2" data-dur="240" class="preset-tile btn-press p-3 rounded-2xl bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/30 text-left transition flex items-center gap-3">
+              <span class="text-xl">🎉</span>
               <div>
                 <p class="font-bold text-pink-300 text-xs">Function / Event</p>
-                <p class="text-[10px] text-pink-400/80">Family Gathering</p>
+                <p class="text-[11px] text-pink-400/80">Gathering / Trip</p>
               </div>
             </button>
 
@@ -623,28 +658,28 @@
 
         <!-- Custom Title Input -->
         <div>
-          <input type="text" id="modalActivityTitleInput" placeholder="Activity Title (or select preset above)" class="w-full bg-surface-850 border border-surface-800 rounded-xl px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-xs font-bold">
+          <input type="text" id="modalActivityTitleInput" placeholder="Activity Title (or select preset above)" class="w-full bg-surface-850 border border-surface-800 rounded-2xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-xs font-bold">
         </div>
 
         <!-- Multitask Switch -->
-        <div class="bg-surface-850 p-2.5 rounded-xl border border-surface-800 flex items-center justify-between">
-          <span class="font-bold text-slate-300 text-xs flex items-center gap-1.5">
-            <i data-lucide="split" class="w-3.5 h-3.5 text-amber-400"></i> Multitasking (Movie/Phone)
+        <div class="bg-surface-850 p-3.5 rounded-2xl border border-surface-800 flex items-center justify-between">
+          <span class="font-bold text-slate-200 text-xs flex items-center gap-2">
+            <i data-lucide="split" class="w-4 h-4 text-amber-400"></i> Multitasking (Movie / Social Media)
           </span>
           <label class="relative inline-flex items-center cursor-pointer">
             <input type="checkbox" id="modalMultitaskCheckbox" class="sr-only peer">
-            <div class="w-9 h-5 bg-surface-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+            <div class="w-10 h-6 bg-surface-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
           </label>
         </div>
 
       </div>
 
       <!-- Modal Footer -->
-      <div class="p-3.5 border-t border-surface-800 bg-surface-850 flex items-center justify-between gap-2">
-        <button id="modalDeleteBtn" class="py-2.5 px-3 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-xl text-xs font-black transition border border-rose-500/20">
+      <div class="p-4 border-t border-surface-800 bg-surface-850 flex items-center justify-between gap-3">
+        <button id="modalDeleteBtn" type="button" class="btn-press py-3 px-4 bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 rounded-2xl text-xs font-black transition border border-rose-500/25">
           Delete
         </button>
-        <button id="modalSaveBtn" class="flex-1 py-2.5 px-4 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-surface-950 rounded-xl text-xs font-black transition shadow-glow-sm">
+        <button id="modalSaveBtn" type="button" class="btn-press flex-1 py-3 px-4 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-surface-950 rounded-2xl text-xs font-black transition shadow-glow-emerald">
           Save Schedule Block
         </button>
       </div>
