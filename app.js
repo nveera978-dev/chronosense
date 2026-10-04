@@ -675,6 +675,181 @@ function deleteHabit(habitId) {
   }
 }
 
+// --- 60-SECOND EVENING AUDIT & TOMORROW PRIMING ---
+function openEveningAuditModal() {
+  playSfx('tap');
+  const modal = document.getElementById('eveningAuditModal');
+  const checklistContainer = document.getElementById('eveningAuditChecklist');
+  const habitsContainer = document.getElementById('eveningAuditHabitsList');
+
+  if (!modal || !checklistContainer) return;
+  checklistContainer.innerHTML = '';
+  if (habitsContainer) habitsContainer.innerHTML = '';
+
+  const plansForToday = getPlansForDate(currentDateStr);
+
+  if (plansForToday.length === 0) {
+    checklistContainer.innerHTML = `
+      <div class="text-center py-4 text-slate-400 text-xs bg-surface-850 rounded-2xl p-4">
+        No scheduled blocks found for today.
+      </div>
+    `;
+  } else {
+    plansForToday.forEach(plan => {
+      const isDone = Boolean(plan.completedDates && plan.completedDates[currentDateStr]);
+      const meta = CATEGORY_META[plan.category] || CATEGORY_META.office;
+      const startStr = minsToTimeStr(plan.startMins);
+      const endStr = minsToTimeStr(plan.endMins);
+      const durStr = formatDurationMins(plan.durationMins);
+
+      const row = document.createElement('div');
+      row.className = 'flex items-center justify-between p-2.5 rounded-2xl bg-surface-850 border border-surface-800 transition';
+      row.innerHTML = `
+        <div class="flex items-center gap-2.5">
+          <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${meta.color}"></span>
+          <div>
+            <h4 class="text-xs font-bold text-white">${plan.title}</h4>
+            <span class="text-[10px] text-slate-400">${startStr} - ${endStr} (${durStr})</span>
+          </div>
+        </div>
+        <button type="button" data-plan-id="${plan.id}" class="audit-plan-toggle btn-press px-2.5 py-1 rounded-xl text-xs font-black flex items-center gap-1 transition ${
+          isDone !== false 
+            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' 
+            : 'bg-surface-800 text-slate-500 border border-surface-750'
+        }">
+          <i data-lucide="${isDone !== false ? 'check-circle' : 'circle'}" class="w-3.5 h-3.5"></i>
+          <span>${isDone !== false ? 'Done' : 'Skipped'}</span>
+        </button>
+      `;
+
+      const btn = row.querySelector('.audit-plan-toggle');
+      btn.addEventListener('click', () => {
+        playSfx('tap');
+        const checked = btn.classList.contains('text-emerald-400');
+        if (checked) {
+          btn.className = 'audit-plan-toggle btn-press px-2.5 py-1 rounded-xl text-xs font-black flex items-center gap-1 transition bg-surface-800 text-slate-500 border border-surface-750';
+          btn.innerHTML = '<i data-lucide="circle" class="w-3.5 h-3.5"></i><span>Skipped</span>';
+        } else {
+          btn.className = 'audit-plan-toggle btn-press px-2.5 py-1 rounded-xl text-xs font-black flex items-center gap-1 transition bg-emerald-500/20 text-emerald-400 border border-emerald-500/40';
+          btn.innerHTML = '<i data-lucide="check-circle" class="w-3.5 h-3.5"></i><span>Done</span>';
+        }
+        if (window.lucide) lucide.createIcons();
+      });
+
+      checklistContainer.appendChild(row);
+    });
+  }
+
+  // Habits List
+  const habits = appSettings.habits || [];
+  if (habitsContainer && habits.length > 0) {
+    if (!appData[currentDateStr]) appData[currentDateStr] = { habits: [] };
+    const todayHabits = appData[currentDateStr].habits || [];
+
+    habits.forEach(habit => {
+      const isDone = Boolean(todayHabits.find(h => h.id === habit.id)?.completed);
+
+      const hRow = document.createElement('div');
+      hRow.className = 'flex items-center justify-between p-2 rounded-xl bg-surface-850/80 border border-surface-800 text-xs';
+      hRow.innerHTML = `
+        <div class="flex items-center gap-2">
+          <span>${habit.icon || '💧'}</span>
+          <span class="font-bold text-slate-200 text-xs">${habit.title}</span>
+        </div>
+        <button type="button" data-habit-id="${habit.id}" class="audit-habit-toggle btn-press px-2 py-0.5 rounded-lg text-xs font-black flex items-center gap-1 transition ${
+          isDone 
+            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' 
+            : 'bg-surface-800 text-slate-500 border border-surface-750'
+        }">
+          <i data-lucide="${isDone ? 'check-circle' : 'circle'}" class="w-3.5 h-3.5"></i>
+          <span>${isDone ? 'Done' : 'Missed'}</span>
+        </button>
+      `;
+
+      const hBtn = hRow.querySelector('.audit-habit-toggle');
+      hBtn.addEventListener('click', () => {
+        playSfx('tap');
+        const checked = hBtn.classList.contains('text-emerald-400');
+        if (checked) {
+          hBtn.className = 'audit-habit-toggle btn-press px-2 py-0.5 rounded-lg text-xs font-black flex items-center gap-1 transition bg-surface-800 text-slate-500 border border-surface-750';
+          hBtn.innerHTML = '<i data-lucide="circle" class="w-3.5 h-3.5"></i><span>Missed</span>';
+        } else {
+          hBtn.className = 'audit-habit-toggle btn-press px-2 py-0.5 rounded-lg text-xs font-black flex items-center gap-1 transition bg-emerald-500/20 text-emerald-400 border border-emerald-500/40';
+          hBtn.innerHTML = '<i data-lucide="check-circle" class="w-3.5 h-3.5"></i><span>Done</span>';
+        }
+        if (window.lucide) lucide.createIcons();
+      });
+
+      habitsContainer.appendChild(hRow);
+    });
+  }
+
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+  if (window.lucide) lucide.createIcons();
+}
+
+function closeEveningAuditModal() {
+  playSfx('tap');
+  const modal = document.getElementById('eveningAuditModal');
+  modal?.classList.add('hidden');
+  modal?.classList.remove('flex');
+}
+
+function auditSelectAll() {
+  playSfx('tap');
+  document.querySelectorAll('.audit-plan-toggle').forEach(btn => {
+    btn.className = 'audit-plan-toggle btn-press px-2.5 py-1 rounded-xl text-xs font-black flex items-center gap-1 transition bg-emerald-500/20 text-emerald-400 border border-emerald-500/40';
+    btn.innerHTML = '<i data-lucide="check-circle" class="w-3.5 h-3.5"></i><span>Done</span>';
+  });
+  document.querySelectorAll('.audit-habit-toggle').forEach(hBtn => {
+    hBtn.className = 'audit-habit-toggle btn-press px-2 py-0.5 rounded-lg text-xs font-black flex items-center gap-1 transition bg-emerald-500/20 text-emerald-400 border border-emerald-500/40';
+    hBtn.innerHTML = '<i data-lucide="check-circle" class="w-3.5 h-3.5"></i><span>Done</span>';
+  });
+  if (window.lucide) lucide.createIcons();
+}
+
+function confirmEveningAudit() {
+  // Save all plan completions
+  document.querySelectorAll('.audit-plan-toggle').forEach(btn => {
+    const planId = btn.getAttribute('data-plan-id');
+    const isDone = btn.classList.contains('text-emerald-400');
+    const plan = appData.plans.find(p => p.id === planId);
+    if (plan) {
+      if (!plan.completedDates) plan.completedDates = {};
+      plan.completedDates[currentDateStr] = isDone;
+    }
+  });
+
+  // Save all habit completions
+  if (!appData[currentDateStr]) appData[currentDateStr] = { habits: [] };
+  const todayHabits = appData[currentDateStr].habits || [];
+
+  document.querySelectorAll('.audit-habit-toggle').forEach(hBtn => {
+    const habitId = hBtn.getAttribute('data-habit-id');
+    const isDone = hBtn.classList.contains('text-emerald-400');
+    let hRecord = todayHabits.find(h => h.id === habitId);
+    if (hRecord) {
+      hRecord.completed = isDone;
+    } else {
+      todayHabits.push({ id: habitId, completed: isDone });
+    }
+  });
+
+  saveAppData();
+  playSfx('quest');
+  fireConfetti();
+  addXP(60);
+
+  closeEveningAuditModal();
+  refreshAllViews();
+}
+
+function previewTomorrow() {
+  playSfx('tab');
+  navigateDay(1);
+}
+
 // --- SETUP EVENT LISTENERS ---
 function setupEventListeners() {
   // Navigation Tabs
@@ -861,6 +1036,17 @@ function setupEventListeners() {
       });
       btn.classList.add('border-emerald-500', 'bg-emerald-500/20');
     });
+  });
+
+  // Evening Audit & Tomorrow Priming Listeners
+  document.getElementById('openEveningAuditBtn')?.addEventListener('click', openEveningAuditModal);
+  document.getElementById('closeEveningAuditBtn')?.addEventListener('click', closeEveningAuditModal);
+  document.getElementById('auditSelectAllBtn')?.addEventListener('click', auditSelectAll);
+  document.getElementById('eveningAuditConfirmBtn')?.addEventListener('click', confirmEveningAudit);
+  document.getElementById('previewTomorrowBtn')?.addEventListener('click', previewTomorrow);
+  document.getElementById('auditGoToTomorrowBtn')?.addEventListener('click', () => {
+    closeEveningAuditModal();
+    previewTomorrow();
   });
 
   // Backup & Reset in Settings
